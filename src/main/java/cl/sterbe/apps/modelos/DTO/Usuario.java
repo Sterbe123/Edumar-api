@@ -2,13 +2,16 @@ package cl.sterbe.apps.modelos.DTO;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.Date;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "usuarios")
-public class Usuario implements Serializable {
+public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,12 +26,9 @@ public class Usuario implements Serializable {
 
     private boolean estado;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     @JoinColumn(name = "rol_id", referencedColumnName = "id")
     private Rol rol;
-
-    @OneToOne(mappedBy = "usuarios")
-    private Perfil perfil;
 
     @Temporal(TemporalType.DATE)
     @Column(name = "create_at")
@@ -39,84 +39,11 @@ public class Usuario implements Serializable {
     private Date updateAt;
 
     @Temporal(TemporalType.DATE)
-    @Column(name = "dalete_at")
+    @Column(name = "delete_at")
     private Date deleteAt;
 
-    //Metodos accesores
-    public Long getId() {
-        return id;
+    @PrePersist
+    public void prePersit(){
+        this.createAt = new Date();
     }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getContrasena() {
-        return contrasena;
-    }
-
-    public void setContrasena(String contrasena) {
-        this.contrasena = contrasena;
-    }
-
-    public boolean isEstado() {
-        return estado;
-    }
-
-    public void setEstado(boolean estado) {
-        this.estado = estado;
-    }
-
-    public Rol getRol() {
-        return rol;
-    }
-
-    public void setRol(Rol rol) {
-        this.rol = rol;
-    }
-
-    public Perfil getPerfil() {
-        return perfil;
-    }
-
-    public void setPerfil(Perfil perfil) {
-        this.perfil = perfil;
-    }
-
-    public Date getCreateAt() {
-        return createAt;
-    }
-
-    public void setCreateAt(Date createAt) {
-        this.createAt = createAt;
-    }
-
-    public Date getUpdateAt() {
-        return updateAt;
-    }
-
-    public void setUpdateAt(Date updateAt) {
-        this.updateAt = updateAt;
-    }
-
-    public Date getDeleteAt() {
-        return deleteAt;
-    }
-
-    public void setDeleteAt(Date deleteAt) {
-        this.deleteAt = deleteAt;
-    }
-
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
 }

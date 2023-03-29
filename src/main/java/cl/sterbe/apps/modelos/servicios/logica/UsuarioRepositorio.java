@@ -24,7 +24,7 @@ public class UsuarioRepositorio implements UsuarioServicio {
     @Override
     @Transactional(readOnly = true)
     public Usuario findById(Long id) {
-        return this.findById(id);
+        return this.usuarioDAO.findById(id).orElse(null);
     }
 
     @Override
