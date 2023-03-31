@@ -2,6 +2,8 @@ package cl.sterbe.apps.modelos.DTO;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,11 +19,15 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
+    @NotEmpty
+    @NotNull
     @Email
     private String email;
 
     @Column(nullable = false)
+    @NotEmpty
+    @NotNull
     private String contrasena;
 
     private boolean estado;

@@ -53,7 +53,7 @@ public class LoginControlador {
         if(rol != null){
             usuario.setRol(rol);
         }else{
-            mensajes.put("error", "No se pudo Encontrar el rol");
+            mensajes.put("error", "No se pudo Encontrar el rol.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
@@ -67,7 +67,7 @@ public class LoginControlador {
         try{
             usuarioNuevo = this.usuarioServicio.save(usuario);
         }catch (DataAccessException e){ //devolver el mensaje de error
-            mensajes.put("mensaje", "Error al ingresar el usuario a la base de datos");
+            mensajes.put("mensaje", "Error al ingresar el usuario a la base de datos.");
             mensajes.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
@@ -76,7 +76,7 @@ public class LoginControlador {
 
         //Realizamos el mensaje correspondientes
         usuarioNuevo.setContrasena("");
-        mensajes.put("mensaje", "Se ha creado con exito el usuario");
+        mensajes.put("mensaje", "Se ha creado con exito el usuario.");
         mensajes.put("usuario", usuarioNuevo);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
