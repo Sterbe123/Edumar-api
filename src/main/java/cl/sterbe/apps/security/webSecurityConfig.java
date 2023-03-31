@@ -28,15 +28,10 @@ public class webSecurityConfig {
         jwtAuthenticationFilter.setAuthenticationManager(authenticationManager);
         jwtAuthenticationFilter.setFilterProcessesUrl("/login");
 
-        httpSecurity.authorizeHttpRequests()
-                    .requestMatchers(HttpMethod.POST, "/api/registro/{rol}")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.GET, "/login")
-                    .permitAll();
-
         return httpSecurity
                 .csrf().disable()
                 .authorizeHttpRequests()
+                .requestMatchers(HttpMethod.POST, "/api/registro/{rol}").permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
