@@ -1,4 +1,4 @@
-package cl.sterbe.apps.modelos.servicios.logica;
+package cl.sterbe.apps.modelos.servicios.implementacion;
 
 import cl.sterbe.apps.modelos.DAO.UsuarioDAO;
 import cl.sterbe.apps.modelos.DTO.Usuario;
@@ -8,9 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
-public class UsuarioRepositorio implements UsuarioServicio {
+public class UsuarioImplementacion implements UsuarioServicio {
 
     @Autowired
     private UsuarioDAO usuarioDAO;
@@ -37,5 +38,10 @@ public class UsuarioRepositorio implements UsuarioServicio {
     @Transactional
     public void delete(Long id) {
         this.usuarioDAO.deleteById(id);
+    }
+
+    @Override
+    public Optional<Usuario> findOneByEmail(String email) {
+        return this.usuarioDAO.findOneByEmail(email);
     }
 }

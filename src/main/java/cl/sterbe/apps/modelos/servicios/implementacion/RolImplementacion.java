@@ -1,4 +1,4 @@
-package cl.sterbe.apps.modelos.servicios.logica;
+package cl.sterbe.apps.modelos.servicios.implementacion;
 
 import cl.sterbe.apps.modelos.DAO.RolDAO;
 import cl.sterbe.apps.modelos.DTO.Rol;
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class RolRepositorio implements RolServicio {
+public class RolImplementacion implements RolServicio {
 
     @Autowired
     private RolDAO rolDAO;
