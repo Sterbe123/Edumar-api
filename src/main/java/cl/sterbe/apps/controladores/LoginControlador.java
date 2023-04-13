@@ -1,5 +1,6 @@
 package cl.sterbe.apps.controladores;
 
+import cl.sterbe.apps.componentes.ValidarCampos;
 import cl.sterbe.apps.modelos.DTO.Rol;
 import cl.sterbe.apps.modelos.DTO.Usuario;
 import cl.sterbe.apps.modelos.servicios.RolServicio;
@@ -17,11 +18,8 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -36,6 +34,9 @@ public class LoginControlador {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private ValidarCampos validarCampos;
+
     @PostMapping("/registro/{rol}")
     public ResponseEntity<?> registro(@Valid @RequestBody Usuario usuario, BindingResult bindingResult, @PathVariable(value = "rol") Long id){
 
@@ -45,11 +46,7 @@ public class LoginControlador {
 
         //Validamos los campos vacios o mal escritos en el e-mail
         if(bindingResult.hasErrors()){
-            List<String> error = bindingResult.getFieldErrors()
-                    .stream()
-                    .map(e -> "El campo " + e.getField() + " " + e.getDefaultMessage())
-                    .collect(Collectors.toList());
-            mensajes.put("errores", error);
+            mensajes.put("errores", this.validarCampos.validarCampos(bindingResult));
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
 
@@ -72,8 +69,7 @@ public class LoginControlador {
         try{
             usuarioNuevo = this.usuarioServicio.save(usuario);
         }catch (DataAccessException e){ //devolver el mensaje de error
-            mensajes.put("mensaje", "Error al ingresar el usuario a la base de datos.");
-            mensajes.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+            mensajes.put("mensaje", "El correo ya esta en uso.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
