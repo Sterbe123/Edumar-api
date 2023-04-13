@@ -4,15 +4,20 @@ import cl.sterbe.apps.modelos.DTO.Rol;
 import cl.sterbe.apps.modelos.DTO.Usuario;
 import cl.sterbe.apps.modelos.servicios.RolServicio;
 import cl.sterbe.apps.modelos.servicios.UsuarioServicio;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,13 +77,19 @@ public class LoginControlador {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
-        //Desencriptar informacion para mostrar al usuario autenticado-------------------- se va hacer más adelante...
-
         //Realizamos el mensaje correspondientes
         usuarioNuevo.setContrasena("");
         mensajes.put("mensaje", "Se ha creado con exito el usuario.");
         mensajes.put("usuario", usuarioNuevo);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+        if (authentication != null) {
+            new SecurityContextLogoutHandler().logout(request, response, authentication); // invalidar la sesión actual del usuario
+        }
+        return ResponseEntity.ok().build();
     }
 }
