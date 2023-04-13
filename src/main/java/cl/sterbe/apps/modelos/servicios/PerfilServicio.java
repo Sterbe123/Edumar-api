@@ -1,8 +1,10 @@
 package cl.sterbe.apps.modelos.servicios;
 
 import cl.sterbe.apps.modelos.DTO.Perfil;
+import cl.sterbe.apps.modelos.DTO.Usuario;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PerfilServicio {
 
@@ -13,4 +15,6 @@ public interface PerfilServicio {
     Perfil save(Perfil perfil);
 
     void delete(Long id);
+
+    Perfil findOneByUsuario(Usuario usuario);
 }

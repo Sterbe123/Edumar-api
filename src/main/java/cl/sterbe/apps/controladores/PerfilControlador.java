@@ -1,14 +1,14 @@
 package cl.sterbe.apps.controladores;
 
+import cl.sterbe.apps.componentes.ValidarCampos;
 import cl.sterbe.apps.componentes.ValidarRun;
 import cl.sterbe.apps.modelos.DTO.Perfil;
 import cl.sterbe.apps.modelos.DTO.Usuario;
 import cl.sterbe.apps.modelos.servicios.PerfilServicio;
 import cl.sterbe.apps.modelos.servicios.UsuarioServicio;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +18,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/perfil/")
@@ -36,7 +36,8 @@ public class PerfilControlador {
     @Autowired
     private ValidarRun validarRun;
 
-    private Logger logger = LoggerFactory.getLogger(PerfilControlador.class);
+    @Autowired
+    private ValidarCampos validarCampos;
 
     @GetMapping("perfiles")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
@@ -66,6 +67,8 @@ public class PerfilControlador {
         //Atributos
         Perfil perfil = null;
         Map<String, Object> mensajes = new HashMap<>();
+        Usuario usuarioAuthenticado = null;
+        Authentication auth = null;
 
         //Validamos que el parametro supere o sea igual a 1
         if(id <= 0){
@@ -74,9 +77,8 @@ public class PerfilControlador {
         }
 
         //Autenticacion del usuario
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        Usuario usuarioAuthenticado = this.usuarioServicio.findOneByEmail(email);
+        auth = SecurityContextHolder.getContext().getAuthentication();
+        usuarioAuthenticado = this.usuarioServicio.findOneByEmail(auth.getName());
 
         //Validamos al usuario
         if(!usuarioAuthenticado.getRol().getRol().equals("ROLE_ADMINISTRADOR")){
@@ -108,35 +110,34 @@ public class PerfilControlador {
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilSave = null;
+        Authentication auth = null;
+        Usuario usuarioAuthenticado = null;
 
         //Validamos los campos vacios o nulos
         if(bindingResult.hasErrors()){
-            List<String> error = bindingResult.getFieldErrors()
-                    .stream()
-                    .map(e -> "El campo " + e.getField() + " " + e.getDefaultMessage())
-                    .collect(Collectors.toList());
-            mensajes.put("errores", error);
+            mensajes.put("errores", this.validarCampos.validarCampos(bindingResult));
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
 
-        //Validamos si el run existe
+        //Validamos si el run es correcto
         if(!this.validarRun.validarRun(perfil.getRun())){
             mensajes.put("Error", "Run no válido.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
 
         //Autenticacion del usuario
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        Usuario usuarioAuthenticado = this.usuarioServicio.findOneByEmail(email);
+        auth = SecurityContextHolder.getContext().getAuthentication();
+        usuarioAuthenticado = this.usuarioServicio.findOneByEmail(auth.getName());
 
-        if(usuarioAuthenticado == null){
-            mensajes.put("denegado", "Debe autenticarse con el sistema.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mensajes);
+        if(this.perfilServicio.findOneByUsuario(usuarioAuthenticado) != null){
+            mensajes.put("error", "El usuario ya tiene un perfil registrado");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
 
+        //Agregamos el usuario correspondiente al perfil
         perfil.setUsuario(usuarioAuthenticado);
 
+        //Agregamos el perfil a la base de datos
         try {
             perfilSave = this.perfilServicio.save(perfil);
         } catch (DataIntegrityViolationException e) {
@@ -144,40 +145,31 @@ public class PerfilControlador {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
+        //Mandamos el mensaje de exito
         mensajes.put("Exito", "Se creo el perfil con exito.");
-        mensajes.put("perfil", this.perfilServicio.save(perfilSave));
+        mensajes.put("perfil", perfilSave);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
     }
 
     @PutMapping("perfiles/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMINISTRADOR') or @userRepository.findById(#id)?.username == authentication.principal.username")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<?> editarPerfil(@Valid @RequestBody Perfil perfil, BindingResult bindingResult, @PathVariable Long id){
 
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD = null;
-        String email = "";
-        Usuario usuario = null;
+        Perfil perfilSave = null;
+        Authentication auth = null;
+        Usuario usuarioAuthenticado = null;
 
         if(id <= 0) {
             mensajes.put("Error", "El parametro no debe ser 0 ni inferior");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
 
-        perfilBD = this.perfilServicio.findById(id);
-
-        if(perfilBD == null){
-            mensajes.put("Error", "No se encontro el perfil.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
-        }
-
         //Validamos los campos vacios o nulos
         if(bindingResult.hasErrors()){
-            List<String> error = bindingResult.getFieldErrors()
-                    .stream()
-                    .map(e -> "El campo " + e.getField() + " " + e.getDefaultMessage())
-                    .collect(Collectors.toList());
-            mensajes.put("errores", error);
+            mensajes.put("errores", this.validarCampos.validarCampos(bindingResult));
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
 
@@ -187,14 +179,23 @@ public class PerfilControlador {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
 
-        //Obtenemos el id del usuario autenticado por el sistema
-    /*    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        email = ( (UserDetailsImple) authentication.getPrincipal()).getUsername();
-        usuario = this.usuarioServicio.findOneByEmail(email).orElse(null);      */
+        //Buscamos el perfil en la base de datos
+        perfilBD = this.perfilServicio.findById(id);
 
-        if(usuario == null){
-            mensajes.put("denegado", "Debe autenticarse con el sistema.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mensajes);
+        //Validamos si exite el perfil
+        if(perfilBD == null){
+            mensajes.put("Error", "No se encontro el perfil.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+        }
+
+        //Autenticacion del usuario
+        auth = SecurityContextHolder.getContext().getAuthentication();
+        usuarioAuthenticado = this.usuarioServicio.findOneByEmail(auth.getName());
+
+        //Validamos si el perfil corresponde con el usuario autenticado
+        if(perfilBD.getUsuario().getId() != usuarioAuthenticado.getId()){
+            mensajes.put("Denegado", "No estas autorizado a editar este recurso");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
         }
 
         //Actualizamos los datos
@@ -203,37 +204,19 @@ public class PerfilControlador {
         perfilBD.setApellidoPaterno(perfil.getApellidoPaterno());
         perfilBD.setApellidoMaterno(perfil.getApellidoMaterno());
         perfilBD.setContacto(perfil.getContacto());
+        perfilBD.setUpdateAt(new Date());
 
+        //Como igual se puede actualizar el run de debe validar si exite o no
+        try {
+            perfilSave = this.perfilServicio.save(perfilBD);
+        }catch (DataAccessException e){
+            mensajes.put("Error", "El run ya esta en uso");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+        }
 
         //Actualizamos base de datos
         mensajes.put("Exito", "Se actualizo con exito perfil.");
-        mensajes.put("perfil", this.perfilServicio.save(perfilBD));
+        mensajes.put("perfil", perfilSave);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
-    }
-
-    @DeleteMapping("perfiles/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> eliminarPerfil(@PathVariable Long id){
-        Map<String, Object> mensajes = new HashMap<>();
-        Perfil perfilBD = null;
-
-        if(id <= 0) {
-            mensajes.put("Error", "El parametro no debe ser 0 ni inferior");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
-        }
-
-        perfilBD = this.perfilServicio.findById(id);
-
-        if(perfilBD == null){
-            mensajes.put("Error", "No se encontro el perfil.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
-        }
-
-        //Eliminamos el perfil
-        this.perfilServicio.delete(perfilBD.getId());
-
-        //Mensajes
-        mensajes.put("Exito", "Se elimino el perfil correctamente.");
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(mensajes);
     }
 }

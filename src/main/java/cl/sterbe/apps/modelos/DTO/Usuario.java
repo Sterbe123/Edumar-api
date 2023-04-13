@@ -44,10 +44,6 @@ public class Usuario {
     @Column(name = "update_at")
     private Date updateAt;
 
-    @Temporal(TemporalType.DATE)
-    @Column(name = "delete_at")
-    private Date deleteAt;
-
     @PrePersist
     public void prePersit(){
         this.createAt = new Date();
