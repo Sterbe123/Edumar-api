@@ -1,6 +1,8 @@
 package cl.sterbe.apps.modelos.DTO;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,19 +20,26 @@ public class Perfil {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @NotNull
+    @NotEmpty
+    @Column(unique = true)
     private String run;
 
+    @NotNull
+    @NotEmpty
     @Column(nullable = false)
     private String nombre;
 
-    @Column(name = "apellido_paterno", nullable = false)
+    @NotNull
+    @NotEmpty
+    @Column(name = "apellido_paterno")
     private String apellidoPaterno;
 
     @Column(name = "apellido_materno")
     private String apellidoMaterno;
 
-    @Column(nullable = false)
+    @NotNull
+    @NotEmpty
     private String contacto;
 
     @OneToOne
@@ -47,4 +56,9 @@ public class Perfil {
     @Temporal(TemporalType.DATE)
     @Column(name = "update_at")
     private Date updateAt;
+
+    @PrePersist
+    public void prePersit(){
+        this.createAt = new Date();
+    }
 }

@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -16,10 +16,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @AllArgsConstructor
 @Configuration
-public class webSecurityConfig {
+@EnableMethodSecurity
+public class WebSecurityConfig {
 
-    private final UserDetailsService USER_DETAILS_SERVICE;
-    private final JWTAuthorizationFilter JWT_AUTHORIZATION_FILTER;
+    private UserDetailsServiceImple userDetailsServiceImple;
+    private JWTAuthorizationFilter jwtAuthorizationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity httpSecurity, AuthenticationManager authenticationManager) throws Exception {
@@ -32,6 +33,7 @@ public class webSecurityConfig {
                 .csrf().disable()
                 .authorizeHttpRequests()
                 .requestMatchers(HttpMethod.POST, "/api/registro/{rol}").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/logout").permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -39,14 +41,14 @@ public class webSecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilter(jwtAuthenticationFilter)
-                .addFilterBefore(JWT_AUTHORIZATION_FILTER, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity httpSecurity, PasswordEncoder passwordEncoder) throws Exception {
         return httpSecurity.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(USER_DETAILS_SERVICE)
+                .userDetailsService(userDetailsServiceImple)
                 .passwordEncoder(passwordEncoder())
                 .and()
                 .build();

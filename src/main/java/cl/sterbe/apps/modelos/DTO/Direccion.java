@@ -1,5 +1,6 @@
 package cl.sterbe.apps.modelos.DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,6 +33,7 @@ public class Direccion {
 
     private String numero;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "perfiles_id", referencedColumnName = "id")
     private Perfil perfil;
@@ -47,4 +49,9 @@ public class Direccion {
     @Temporal(TemporalType.DATE)
     @Column(name = "delete_at")
     private Date deleteAt;
+
+    @PrePersist
+    public void prePersit(){
+        this.createAt = new Date();
+    }
 }
