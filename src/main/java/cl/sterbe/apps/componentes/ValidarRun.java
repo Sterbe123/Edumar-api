@@ -1,11 +1,15 @@
 package cl.sterbe.apps.componentes;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ValidarRun {
 
+    /**
+     * Si el run es correcto es true.
+     * @param run
+     * @return boolean
+     */
     public boolean validarRun(String run){
         Integer digitoVerificado;
         int suma = 0;
