@@ -1,31 +1,35 @@
 package cl.sterbe.apps.security;
 
-import cl.sterbe.apps.modelos.DTO.Usuario;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 @AllArgsConstructor
+@Getter
+@Setter
 public class UserDetailsImple implements UserDetails {
 
-    private final Usuario USUARIO;
+  private final UserDetails USUARIO;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return Arrays.asList(new SimpleGrantedAuthority(USUARIO.getAuthorities().toString()));
     }
 
     @Override
     public String getPassword() {
-        return USUARIO.getContrasena();
+        return USUARIO.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return USUARIO.getEmail();
+        return USUARIO.getUsername();
     }
 
     @Override
@@ -49,6 +53,6 @@ public class UserDetailsImple implements UserDetails {
     }
 
     public String getNombre(){
-        return USUARIO.getEmail();
+        return USUARIO.getUsername();
     }
 }

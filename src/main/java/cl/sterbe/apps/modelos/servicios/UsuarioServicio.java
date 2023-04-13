@@ -1,6 +1,8 @@
 package cl.sterbe.apps.modelos.servicios;
 
 import cl.sterbe.apps.modelos.DTO.Usuario;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,5 +17,5 @@ public interface UsuarioServicio {
 
     void delete(Long id);
 
-    Optional<Usuario> findOneByEmail(String email);
+    Usuario findOneByEmail(String email);
 }
