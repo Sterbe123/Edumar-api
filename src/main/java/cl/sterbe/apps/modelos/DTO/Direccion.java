@@ -2,6 +2,8 @@ package cl.sterbe.apps.modelos.DTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,20 +20,32 @@ public class Direccion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
+    @NotEmpty
     @Column(name = "quien_recibe")
     private String quienRecibe;
 
+    @NotNull
     @Column(name = "region_id")
     private int region;
 
+    @NotNull
     @Column(name = "comuna_id")
     private int comuna;
 
+    @NotNull
+    @NotEmpty
     private String poblacion;
 
+    @NotNull
+    @NotEmpty
     private String calle;
 
+    @NotNull
+    @NotEmpty
     private String numero;
+
+    private boolean principal;
 
     @JsonIgnore
     @ManyToOne
@@ -45,13 +59,4 @@ public class Direccion {
     @Temporal(TemporalType.DATE)
     @Column(name = "update_at")
     private Date updateAt;
-
-    @Temporal(TemporalType.DATE)
-    @Column(name = "delete_at")
-    private Date deleteAt;
-
-    @PrePersist
-    public void prePersit(){
-        this.createAt = new Date();
-    }
 }

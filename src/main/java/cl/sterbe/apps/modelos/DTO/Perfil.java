@@ -3,6 +3,7 @@ package cl.sterbe.apps.modelos.DTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -46,7 +47,7 @@ public class Perfil {
     @JoinColumn(name = "usuario_id", referencedColumnName = "id")
     private Usuario usuario;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Direccion> direcciones;
 
     @Temporal(TemporalType.DATE)
@@ -56,9 +57,4 @@ public class Perfil {
     @Temporal(TemporalType.DATE)
     @Column(name = "update_at")
     private Date updateAt;
-
-    @PrePersist
-    public void prePersit(){
-        this.createAt = new Date();
-    }
 }

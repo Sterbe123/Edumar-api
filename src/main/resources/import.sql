@@ -6,6 +6,6 @@ INSERT INTO usuarios (email,contrasena,estado,rol_id,create_at,update_at) VALUES
 
 INSERT INTO perfiles (run,nombre,apellido_paterno,apellido_materno,contacto,usuario_id,create_at,update_at) VALUES ("18580892-0","Rodrigo","Lazo","Fredes","991676062",1,NOW(),null);
 
-INSERT INTO direcciones (quien_recibe,region_id,comuna_id,poblacion,calle,numero,perfiles_id) VALUES ("Rodrigo Lazo",4,10,"La Aguada Centro","El Litre","433",1);
+INSERT INTO direcciones (quien_recibe,region_id,comuna_id,poblacion,calle,numero,principal,perfiles_id,create_at) VALUES ("Rodrigo Lazo",4,10,"La Aguada Centro","El Litre","433",1,1,NOW());
 
 INSERT INTO perfiles_direcciones (perfil_id,direcciones_id) VALUES (1,1);

@@ -25,8 +25,6 @@ public class Usuario {
     @Email
     private String email;
 
-    @Column(nullable = false)
-    @NotEmpty
     @NotNull
     private String contrasena;
 
@@ -43,9 +41,4 @@ public class Usuario {
     @Temporal(TemporalType.DATE)
     @Column(name = "update_at")
     private Date updateAt;
-
-    @PrePersist
-    public void prePersit(){
-        this.createAt = new Date();
-    }
 }
