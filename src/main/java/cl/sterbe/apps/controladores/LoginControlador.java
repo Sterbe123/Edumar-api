@@ -18,6 +18,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,8 +63,9 @@ public class LoginControlador {
         //Encriptar Informacion del usuario para la insersion en la base de datos
         usuario.setContrasena(this.passwordEncoder.encode(usuario.getContrasena()));
 
-        //Establecer el estado del usuario
+        //Establecer el estado del usuario y fecha de registro
         usuario.setEstado(true);
+        usuario.setCreateAt(new Date());
 
         //Realizamos la insercion a la base de datos
         try{
@@ -74,7 +76,7 @@ public class LoginControlador {
         }
 
         //Realizamos el mensaje correspondientes
-        usuarioNuevo.setContrasena("");
+        usuario.setContrasena("");
         mensajes.put("mensaje", "Se ha creado con exito el usuario.");
         mensajes.put("usuario", usuarioNuevo);
 

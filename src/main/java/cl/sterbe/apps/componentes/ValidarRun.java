@@ -41,8 +41,6 @@ public class ValidarRun {
 
                 if(resultado == digitoVerificado){
                     return true;
-                }else{
-                    return false;
                 }
             }
         }catch (NumberFormatException e){
