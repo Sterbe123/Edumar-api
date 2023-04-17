@@ -9,8 +9,6 @@ import cl.sterbe.apps.modelos.servicios.DireccionServicio;
 import cl.sterbe.apps.modelos.servicios.PerfilServicio;
 import cl.sterbe.apps.modelos.servicios.UsuarioServicio;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
