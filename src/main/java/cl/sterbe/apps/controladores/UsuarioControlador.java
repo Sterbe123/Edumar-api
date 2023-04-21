@@ -1,5 +1,6 @@
 package cl.sterbe.apps.controladores;
 
+import cl.sterbe.apps.componentes.UsuarioAutenticado;
 import cl.sterbe.apps.componentes.ValidarCampos;
 import cl.sterbe.apps.componentes.ValidarContrasena;
 import cl.sterbe.apps.modelos.DTO.Usuario;
@@ -10,8 +11,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +35,9 @@ public class UsuarioControlador {
 
     @Autowired
     private ValidarContrasena validarContrasena;
+
+    @Autowired
+    private UsuarioAutenticado usuarioAutenticado;
 
     @GetMapping("usuarios")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
@@ -65,7 +67,7 @@ public class UsuarioControlador {
     public ResponseEntity<?> buscarUsuario(@PathVariable Long id){
 
         //Atributos
-        Usuario usuario = null;
+        Usuario usuario;
         Map<String, Object> mensajes = new HashMap<>();
 
         //Validar parametros
@@ -97,12 +99,10 @@ public class UsuarioControlador {
     public ResponseEntity<?> editarContrasena(@Valid @RequestBody Usuario usuario, BindingResult bindingResult){
 
         //Atributos
-        Usuario usuarioSave = null;
-        Usuario usuarioAuthenticado = null;
+        Usuario usuarioAuthenticado;
         Map<String, Object> mensajes = new HashMap<>();
-        Authentication auth = null;
 
-        //Validr campos
+        //Validar campos
         if(bindingResult.hasErrors()){
             mensajes.put("error", this.validarCampos.validarCampos(bindingResult));
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
@@ -119,14 +119,7 @@ public class UsuarioControlador {
         }
 
         //Autenticacion del usuario
-        auth = SecurityContextHolder.getContext().getAuthentication();
-        usuarioAuthenticado = this.usuarioServicio.findOneByEmail(auth.getName()).orElse(null);
-
-        //Validamos si exite el usuario
-        if(usuarioAuthenticado == null){
-            mensajes.put("error", "No registrado");
-            return ResponseEntity.status(HttpStatus.NETWORK_AUTHENTICATION_REQUIRED).body(mensajes);
-        }
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Validamos que la contraseña no sean la misma a la que va actualizar
         if(this.passwordEncoder.matches(usuario.getContrasena(), usuarioAuthenticado.getContrasena())){
@@ -134,24 +127,22 @@ public class UsuarioControlador {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
 
-        //cambiamos la contrasena y la encriptamos
+        //cambiamos la contraseña y la encriptamos
         usuarioAuthenticado.setContrasena(this.passwordEncoder.encode(usuario.getContrasena()));
         usuarioAuthenticado.setUpdateAt(new Date());
 
         //hacemos la persistencia
         try {
-            usuarioSave = this.usuarioServicio.save(usuarioAuthenticado);
+            usuarioAuthenticado = this.usuarioServicio.save(usuarioAuthenticado);
+            usuarioAuthenticado.setContrasena("");
         }catch (DataAccessException e){
             mensajes.put("error", e.getMessage() + " " + e.getLocalizedMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
-        //Establecemos la contraseña a vacio
-        usuarioSave.setContrasena("");
-
         //mensaje de exito
         mensajes.put("exito", "Se actualizo la contraseña correctamente");
-        mensajes.put("usuario", usuarioSave);
+        mensajes.put("usuario", usuarioAuthenticado);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
     }
 
@@ -160,8 +151,7 @@ public class UsuarioControlador {
     public ResponseEntity<?> deshabilitarUsuario(@PathVariable Long id){
 
         //Atributo
-        Usuario usuarioBD = null;
-        Usuario usuarioSave = null;
+        Usuario usuarioBD;
         Map<String, Object> mensajes = new HashMap<>();
 
         //Validar el parametro
@@ -181,7 +171,7 @@ public class UsuarioControlador {
 
         //Validamos que el usuario a deshabilitar no sea un administrador
         if(usuarioBD.getRol().getRol().equals("ROLE_ADMINISTRADOR")){
-            mensajes.put("error", "No puedes deshabilitar un administrador");
+            mensajes.put("error", "No puedes deshabilitar a un administrador");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
 
@@ -195,18 +185,16 @@ public class UsuarioControlador {
 
         //Hacemos la actualizacion
         try {
-            usuarioSave = this.usuarioServicio.save(usuarioBD);
+            usuarioBD = this.usuarioServicio.save(usuarioBD);
+            usuarioBD.setContrasena("");
         }catch (DataAccessException e){
             mensajes.put("error", e.getMessage() + " " + e.getLocalizedMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
-        //Establecemos la contraseña a vacio
-        usuarioSave.setContrasena("");
-
         //mensajes de exito
         mensajes.put("exito", "El usuario se deshabilito correctamente");
-        mensajes.put("usuario", usuarioSave);
+        mensajes.put("usuario", usuarioBD);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
     }
 
@@ -215,8 +203,7 @@ public class UsuarioControlador {
     public ResponseEntity<?> habilitarUsuario(@PathVariable Long id){
 
         //Atributo
-        Usuario usuarioBD = null;
-        Usuario usuarioSave = null;
+        Usuario usuarioBD;
         Map<String, Object> mensajes = new HashMap<>();
 
         //Validar el parametro
@@ -250,18 +237,16 @@ public class UsuarioControlador {
 
         //Hacemos la actualizacion
         try {
-            usuarioSave = this.usuarioServicio.save(usuarioBD);
+            usuarioBD = this.usuarioServicio.save(usuarioBD);
+            usuarioBD.setContrasena("");
         }catch (DataAccessException e){
             mensajes.put("error", e.getMessage() + " " + e.getLocalizedMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
-        //Establecemos la contraseña a vacio
-        usuarioSave.setContrasena("");
-
         //mensajes de exito
         mensajes.put("exito", "El usuario se habilito correctamente");
-        mensajes.put("usuario", usuarioSave);
+        mensajes.put("usuario", usuarioBD);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
     }
 }
