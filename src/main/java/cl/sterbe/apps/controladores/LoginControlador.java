@@ -1,5 +1,6 @@
 package cl.sterbe.apps.controladores;
 
+import cl.sterbe.apps.componentes.UsuarioAutenticado;
 import cl.sterbe.apps.componentes.ValidarCampos;
 import cl.sterbe.apps.componentes.ValidarContrasena;
 import cl.sterbe.apps.modelos.DTO.Rol;
@@ -46,8 +47,8 @@ public class LoginControlador {
     public ResponseEntity<?> registro(@Valid @RequestBody Usuario usuario, BindingResult bindingResult, @PathVariable(value = "rol") Long id){
 
         Map<String, Object> mensajes = new HashMap<>();
-        Usuario usuarioNuevo = null;
-        Rol rol = null;
+        Usuario usuarioNuevo;
+        Rol rol;
 
         //Validamos los campos vacios o mal escritos en el e-mail
         if(bindingResult.hasErrors()){

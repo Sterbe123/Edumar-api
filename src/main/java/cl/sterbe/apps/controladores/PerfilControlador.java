@@ -113,7 +113,6 @@ public class PerfilControlador {
 
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
-        Perfil perfilSave;
         Usuario usuarioAuthenticado;
 
         //Validamos los campos vacios o nulos
@@ -144,8 +143,8 @@ public class PerfilControlador {
 
         //Agregamos el perfil a la base de datos
         try {
-            perfilSave = this.perfilServicio.save(perfil);
-            perfilSave.getUsuario().setContrasena("");
+            perfil = this.perfilServicio.save(perfil);
+            perfil.getUsuario().setContrasena("");
         } catch (DataIntegrityViolationException e) {
             mensajes.put("error", "el run ya esta en uso");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
@@ -153,7 +152,7 @@ public class PerfilControlador {
 
         //Mandamos el mensaje de exito
         mensajes.put("Exito", "Se creo el perfil con exito.");
-        mensajes.put("perfil", perfilSave);
+        mensajes.put("perfil", perfil);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
     }
 
@@ -165,7 +164,6 @@ public class PerfilControlador {
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
-        Perfil perfilSave;
         Usuario usuarioAuthenticado;
 
         if(id <= 0) {
@@ -213,8 +211,8 @@ public class PerfilControlador {
 
         //Como igual se puede actualizar el run de debe validar si exite o no
         try {
-            perfilSave = this.perfilServicio.save(perfilBD);
-            perfilSave.getUsuario().setContrasena("");
+            perfilBD = this.perfilServicio.save(perfilBD);
+            perfilBD.getUsuario().setContrasena("");
         }catch (DataAccessException e){
             mensajes.put("Error", "El run ya esta en uso");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
@@ -222,7 +220,7 @@ public class PerfilControlador {
 
         //Actualizamos base de datos
         mensajes.put("Exito", "Se actualizo con exito perfil.");
-        mensajes.put("perfil", perfilSave);
+        mensajes.put("perfil", perfilBD);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
     }
 
@@ -234,8 +232,6 @@ public class PerfilControlador {
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
-        Perfil perfilSave;
-        Direccion direccionSave;
         Usuario usuarioAuthenticado;
 
         //Validamos los parametros
@@ -283,10 +279,10 @@ public class PerfilControlador {
 
         //Hacemos la insercion a la base de datos
         try {
-            direccionSave = this.direccionServicio.save(direccion);
-            perfilBD.getDirecciones().add(direccionSave);
-            perfilSave = this.perfilServicio.save(perfilBD);
-            perfilSave.getUsuario().setContrasena("");
+            direccion = this.direccionServicio.save(direccion);
+            perfilBD.getDirecciones().add(direccion);
+            perfilBD = this.perfilServicio.save(perfilBD);
+            perfilBD.getUsuario().setContrasena("");
         }catch (DataAccessException e){
             mensajes.put("error", e.getMessage() + " " + e.getLocalizedMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
@@ -294,7 +290,7 @@ public class PerfilControlador {
 
         //Mandamos el mensaje de exito
         mensajes.put("exito", "Se agrego la direción con exito");
-        mensajes.put("perfil", perfilSave);
+        mensajes.put("perfil", perfilBD);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
     }
 
@@ -307,7 +303,6 @@ public class PerfilControlador {
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
-        Perfil perfilSave;
         Usuario usuarioAuthenticado;
         boolean direccionEncontrada = false;
 
@@ -364,8 +359,8 @@ public class PerfilControlador {
         }
 
         try {
-            perfilSave = this.perfilServicio.save(perfilBD);
-            perfilSave.getUsuario().setContrasena("");
+            perfilBD = this.perfilServicio.save(perfilBD);
+            perfilBD.getUsuario().setContrasena("");
         }catch (DataAccessException e){
             mensajes.put("Error", e.getMessage() + " " + e.getLocalizedMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
@@ -373,7 +368,7 @@ public class PerfilControlador {
 
         //Creamos el mensaje de exito
         mensajes.put("Exito", "Se actualizo la dirección con exito");
-        mensajes.put("perfil", perfilSave);
+        mensajes.put("perfil", perfilBD);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
     }
 
@@ -385,7 +380,6 @@ public class PerfilControlador {
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
-        Perfil perfilSave;
         Usuario usuarioAuthenticado;
         boolean direccionEncontrada = false;
 
@@ -429,9 +423,9 @@ public class PerfilControlador {
         }
 
         try {
-            perfilSave = this.perfilServicio.save(perfilBD);
+            perfilBD = this.perfilServicio.save(perfilBD);
             this.direccionServicio.delete(direccionId);
-            perfilSave.getUsuario().setContrasena("");
+            perfilBD.getUsuario().setContrasena("");
         }catch (DataAccessException e){
             mensajes.put("Error", e.getMessage() + " " + e.getLocalizedMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
@@ -439,7 +433,7 @@ public class PerfilControlador {
 
         //Creamos el mensaje de exito
         mensajes.put("Exito", "Se elimino la dirección con exito");
-        mensajes.put("perfil", perfilSave);
+        mensajes.put("perfil", perfilBD);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(mensajes);
     }
 
@@ -451,7 +445,6 @@ public class PerfilControlador {
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
-        Perfil perfilSave;
         Usuario usuarioAuthenticado;
         boolean direccionEncontrada = false;
 
@@ -496,8 +489,8 @@ public class PerfilControlador {
         }
 
         try {
-            perfilSave = this.perfilServicio.save(perfilBD);
-            perfilSave.getUsuario().setContrasena("");
+            perfilBD = this.perfilServicio.save(perfilBD);
+            perfilBD.getUsuario().setContrasena("");
         }catch (DataAccessException e){
             mensajes.put("Error", e.getMessage() + " " + e.getLocalizedMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
@@ -505,7 +498,7 @@ public class PerfilControlador {
 
         //Mensajes de exito
         mensajes.put("exito", "Se actualizo la dirección con exito.");
-        mensajes.put("perfil", perfilSave);
+        mensajes.put("perfil", perfilBD);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
     }
 }
