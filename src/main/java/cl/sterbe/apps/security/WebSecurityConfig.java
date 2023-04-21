@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig {
 
     private UserDetailsServiceImple userDetailsServiceImple;
+
     private JWTAuthorizationFilter jwtAuthorizationFilter;
 
     @Bean

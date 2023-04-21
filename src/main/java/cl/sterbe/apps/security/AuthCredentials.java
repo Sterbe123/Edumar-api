@@ -11,7 +11,7 @@ import java.util.Collection;
 public class AuthCredentials {
 
     private String email;
-    private String password;
+    private String contrasena;
     private Collection<? extends GrantedAuthority> authorities;
 
 }

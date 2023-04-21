@@ -26,6 +26,7 @@ public class Usuario {
     private String email;
 
     @NotNull
+    @NotEmpty
     private String contrasena;
 
     private boolean estado;

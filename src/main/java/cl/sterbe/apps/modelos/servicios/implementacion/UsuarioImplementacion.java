@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UsuarioImplementacion implements UsuarioServicio {
@@ -40,8 +41,8 @@ public class UsuarioImplementacion implements UsuarioServicio {
     }
 
     @Override
-    public Usuario findOneByEmail(String email) {
-        Usuario usuario = this.usuarioDAO.findOneByEmail(email).orElse(null);
-        return usuario;
+    @Transactional(readOnly = true)
+    public Optional<Usuario> findOneByEmail(String email) {
+        return this.usuarioDAO.findOneByEmail(email);
     }
 }

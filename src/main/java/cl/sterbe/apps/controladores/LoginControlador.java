@@ -1,6 +1,7 @@
 package cl.sterbe.apps.controladores;
 
 import cl.sterbe.apps.componentes.ValidarCampos;
+import cl.sterbe.apps.componentes.ValidarContrasena;
 import cl.sterbe.apps.modelos.DTO.Rol;
 import cl.sterbe.apps.modelos.DTO.Usuario;
 import cl.sterbe.apps.modelos.servicios.RolServicio;
@@ -38,6 +39,9 @@ public class LoginControlador {
     @Autowired
     private ValidarCampos validarCampos;
 
+    @Autowired
+    private ValidarContrasena validarContrasena;
+
     @PostMapping("/registro/{rol}")
     public ResponseEntity<?> registro(@Valid @RequestBody Usuario usuario, BindingResult bindingResult, @PathVariable(value = "rol") Long id){
 
@@ -48,6 +52,16 @@ public class LoginControlador {
         //Validamos los campos vacios o mal escritos en el e-mail
         if(bindingResult.hasErrors()){
             mensajes.put("errores", this.validarCampos.validarCampos(bindingResult));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+        }
+
+        //Validamos si la contraseña cumple con los requerimientos
+        if(!this.validarContrasena.validarContrasena(usuario.getContrasena())){
+            mensajes.put("error", "Error en la contraseña");
+            mensajes.put("condición 1", "La contraseña debe ser superior a 8 caracter");
+            mensajes.put("condición 2", "La contraseña debe contener por lo menos una mayúscula");
+            mensajes.put("condición 3", "La contraseña debe contener minúsculas");
+            mensajes.put("condición 4", "La contraseña debe contener por lo menos un número");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
 
