@@ -8,12 +8,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -24,11 +21,13 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         try{
             authCredentials = new ObjectMapper().readValue(request.getReader(), AuthCredentials.class);
-        }catch (IOException e){ }
+        }catch (IOException e){
+            System.out.println(e.getMessage() + " " + e.getLocalizedMessage());
+        }
 
         UsernamePasswordAuthenticationToken usernamePat = new UsernamePasswordAuthenticationToken(
                 authCredentials.getEmail(),
-                authCredentials.getPassword(),
+                authCredentials.getContrasena(),
                 authCredentials.getAuthorities()
         );
 
@@ -39,14 +38,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authResult) throws IOException, ServletException {
 
-        //Obtener los roles del usuario
-        List<String> roles = authResult.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-
         UserDetailsImple userDetailsImple = (UserDetailsImple) authResult.getPrincipal();
-        String token = TokenUtils.crearToken(userDetailsImple.getNombre(), userDetailsImple.getUsername(), roles);
-
+        String token = TokenUtils.crearToken(userDetailsImple.getId(), userDetailsImple.getUsername(), userDetailsImple.getAuthorities());
         response.addHeader("Authorization", "Bearer " + token);
         response.getWriter().flush();
 

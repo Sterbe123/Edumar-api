@@ -1,5 +1,6 @@
 package cl.sterbe.apps.security;
 
+import cl.sterbe.apps.modelos.DTO.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,21 +16,21 @@ import java.util.Collection;
 @Setter
 public class UserDetailsImple implements UserDetails {
 
-  private final UserDetails USUARIO;
+  private final Usuario USUARIO;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Arrays.asList(new SimpleGrantedAuthority(USUARIO.getAuthorities().toString()));
+        return Arrays.asList(new SimpleGrantedAuthority(USUARIO.getRol().getRol()));
     }
 
     @Override
     public String getPassword() {
-        return USUARIO.getPassword();
+        return USUARIO.getContrasena();
     }
 
     @Override
     public String getUsername() {
-        return USUARIO.getUsername();
+        return USUARIO.getEmail();
     }
 
     @Override
@@ -52,7 +53,7 @@ public class UserDetailsImple implements UserDetails {
         return true;
     }
 
-    public String getNombre(){
-        return USUARIO.getUsername();
+    public Long getId(){
+        return USUARIO.getId();
     }
 }

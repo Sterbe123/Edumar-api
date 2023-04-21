@@ -1,5 +1,6 @@
 package cl.sterbe.apps.controladores;
 
+import cl.sterbe.apps.componentes.UsuarioAutenticado;
 import cl.sterbe.apps.componentes.ValidarCampos;
 import cl.sterbe.apps.componentes.ValidarRun;
 import cl.sterbe.apps.modelos.DTO.Direccion;
@@ -15,15 +16,13 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
 @RestController
-@RequestMapping("api/perfil/")
+@RequestMapping("api/")
 public class PerfilControlador {
 
     @Autowired
@@ -40,6 +39,9 @@ public class PerfilControlador {
 
     @Autowired
     private ValidarCampos validarCampos;
+
+    @Autowired
+    private UsuarioAutenticado usuarioAutenticado;
 
     @GetMapping("perfiles")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
@@ -68,10 +70,9 @@ public class PerfilControlador {
     public ResponseEntity<?> buscarPerfil(@PathVariable Long id){
 
         //Atributos
-        Perfil perfil = null;
+        Perfil perfil;
         Map<String, Object> mensajes = new HashMap<>();
-        Usuario usuarioAuthenticado = null;
-        Authentication auth = null;
+        Usuario usuarioAuthenticado;
 
         //Validamos que el parametro supere o sea igual a 1
         if(id <= 0){
@@ -80,14 +81,7 @@ public class PerfilControlador {
         }
 
         //Autenticacion del usuario
-        auth = SecurityContextHolder.getContext().getAuthentication();
-        usuarioAuthenticado = this.usuarioServicio.findOneByEmail(auth.getName());
-
-        //Validamos si existe el usuario
-        if(usuarioAuthenticado == null){
-            mensajes.put("Denegado", "No estas resgistrado");
-            return ResponseEntity.status(HttpStatus.NETWORK_AUTHENTICATION_REQUIRED).body(mensajes);
-        }
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Buscamos el perfil en la base de datos
         perfil = this.perfilServicio.findById(id);
@@ -100,7 +94,7 @@ public class PerfilControlador {
 
         //Validamos al usuario
         if(!usuarioAuthenticado.getRol().getRol().equals("ROLE_ADMINISTRADOR")){
-            if(id != usuarioAuthenticado.getId()){
+            if(!perfil.getUsuario().getId().equals(usuarioAuthenticado.getId())){
                 mensajes.put("denegado", "No tienes acceso al recurso solicitado");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
             }
@@ -119,9 +113,8 @@ public class PerfilControlador {
 
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
-        Perfil perfilSave = null;
-        Authentication auth = null;
-        Usuario usuarioAuthenticado = null;
+        Perfil perfilSave;
+        Usuario usuarioAuthenticado;
 
         //Validamos los campos vacios o nulos
         if(bindingResult.hasErrors()){
@@ -136,14 +129,7 @@ public class PerfilControlador {
         }
 
         //Autenticacion del usuario
-        auth = SecurityContextHolder.getContext().getAuthentication();
-        usuarioAuthenticado = this.usuarioServicio.findOneByEmail(auth.getName());
-
-        //Validamos si exite el usuario
-        if(usuarioAuthenticado == null){
-            mensajes.put("error", "El usuario no esta autenticado");
-            return ResponseEntity.status(HttpStatus.NETWORK_AUTHENTICATION_REQUIRED).body(mensajes);
-        }
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Validamos si el usuario ya tienen un perfil
         if(this.perfilServicio.findOneByUsuario(usuarioAuthenticado) != null){
@@ -159,13 +145,13 @@ public class PerfilControlador {
         //Agregamos el perfil a la base de datos
         try {
             perfilSave = this.perfilServicio.save(perfil);
+            perfilSave.getUsuario().setContrasena("");
         } catch (DataIntegrityViolationException e) {
             mensajes.put("error", "el run ya esta en uso");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
-        //Mandamos el mensaje de exito y establecemos el campo contraseña como vacio
-        perfilSave.getUsuario().setContrasena("");
+        //Mandamos el mensaje de exito
         mensajes.put("Exito", "Se creo el perfil con exito.");
         mensajes.put("perfil", perfilSave);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
@@ -178,10 +164,9 @@ public class PerfilControlador {
 
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
-        Perfil perfilBD = null;
-        Perfil perfilSave = null;
-        Authentication auth = null;
-        Usuario usuarioAuthenticado = null;
+        Perfil perfilBD;
+        Perfil perfilSave;
+        Usuario usuarioAuthenticado;
 
         if(id <= 0) {
             mensajes.put("Error", "El parametro no debe ser 0 ni inferior");
@@ -201,14 +186,7 @@ public class PerfilControlador {
         }
 
         //Autenticacion del usuario
-        auth = SecurityContextHolder.getContext().getAuthentication();
-        usuarioAuthenticado = this.usuarioServicio.findOneByEmail(auth.getName());
-
-        //Validamos si existe el usuario
-        if(usuarioAuthenticado == null){
-            mensajes.put("Denegado", "No estas resgistrado");
-            return ResponseEntity.status(HttpStatus.NETWORK_AUTHENTICATION_REQUIRED).body(mensajes);
-        }
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Buscamos el perfil en la base de datos
         perfilBD = this.perfilServicio.findById(id);
@@ -220,7 +198,7 @@ public class PerfilControlador {
         }
 
         //Validamos si el perfil corresponde con el usuario autenticado
-        if(perfilBD.getUsuario().getId() != usuarioAuthenticado.getId()){
+        if(!perfilBD.getUsuario().getId().equals(usuarioAuthenticado.getId())){
             mensajes.put("Denegado", "No estas autorizado a editar este recurso");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
         }
@@ -236,30 +214,29 @@ public class PerfilControlador {
         //Como igual se puede actualizar el run de debe validar si exite o no
         try {
             perfilSave = this.perfilServicio.save(perfilBD);
+            perfilSave.getUsuario().setContrasena("");
         }catch (DataAccessException e){
             mensajes.put("Error", "El run ya esta en uso");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
         //Actualizamos base de datos
-        perfilSave.getUsuario().setContrasena("");
         mensajes.put("Exito", "Se actualizo con exito perfil.");
         mensajes.put("perfil", perfilSave);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
     }
 
-    @PostMapping("/perfiles/direcciones/{perfil_id}")
+    @PostMapping("perfiles/direcciones/{perfil_id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> agregarDireccion(@Valid @RequestBody Direccion direccion, BindingResult bindingResult,
                                                 @PathVariable(value = "perfil_id") Long id){
 
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
-        Perfil perfilBD = null;
-        Perfil perfilSave = null;
-        Direccion direccionSave = null;
-        Authentication auth = null;
-        Usuario usuarioAuthenticado = null;
+        Perfil perfilBD;
+        Perfil perfilSave;
+        Direccion direccionSave;
+        Usuario usuarioAuthenticado;
 
         //Validamos los parametros
         if(id <= 0) {
@@ -274,14 +251,7 @@ public class PerfilControlador {
         }
 
         //Autenticacion del usuario
-        auth = SecurityContextHolder.getContext().getAuthentication();
-        usuarioAuthenticado = this.usuarioServicio.findOneByEmail(auth.getName());
-
-        //Validamos si exite el usuario
-        if(usuarioAuthenticado == null){
-            mensajes.put("Denegado", "No registrado");
-            return ResponseEntity.status(HttpStatus.NETWORK_AUTHENTICATION_REQUIRED).body(mensajes);
-        }
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Buscamos el perfil en la base de datos
         perfilBD = this.perfilServicio.findById(id);
@@ -293,7 +263,7 @@ public class PerfilControlador {
         }
 
         //Validamos si el perfil corresponde con el usuario autenticado
-        if(perfilBD.getUsuario().getId() != usuarioAuthenticado.getId()){
+        if(!perfilBD.getUsuario().getId().equals(usuarioAuthenticado.getId())){
             mensajes.put("Denegado", "No estas autorizado a editar este recurso");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
         }
@@ -302,12 +272,12 @@ public class PerfilControlador {
         direccion.setCreateAt(new Date());
         direccion.setPerfil(perfilBD);
 
-        if(perfilBD.getDirecciones().isEmpty()){
-            direccion.setPrincipal(true);
-        }else if(perfilBD.getDirecciones().size() == 5){
+        if(perfilBD.getDirecciones().size() == 5){
             mensajes.put("error", "Superaste el límite de direcciones");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
-        }else if(!perfilBD.getDirecciones().isEmpty()){
+        }else if(perfilBD.getDirecciones().isEmpty()){
+            direccion.setPrincipal(true);
+        }else{
             direccion.setPrincipal(false);
         }
 
@@ -316,19 +286,19 @@ public class PerfilControlador {
             direccionSave = this.direccionServicio.save(direccion);
             perfilBD.getDirecciones().add(direccionSave);
             perfilSave = this.perfilServicio.save(perfilBD);
+            perfilSave.getUsuario().setContrasena("");
         }catch (DataAccessException e){
             mensajes.put("error", e.getMessage() + " " + e.getLocalizedMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
         //Mandamos el mensaje de exito
-        perfilSave.getUsuario().setContrasena("");
         mensajes.put("exito", "Se agrego la direción con exito");
         mensajes.put("perfil", perfilSave);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
     }
 
-    @PutMapping("/perfiles/direcciones/{perfil_id}/{direccion_id}")
+    @PutMapping("perfiles/direcciones/{perfil_id}/{direccion_id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> editarDireccion(@Valid @RequestBody Direccion direccion, BindingResult bindingResult,
                                              @PathVariable(value = "perfil_id") Long perfilId,
@@ -336,10 +306,9 @@ public class PerfilControlador {
 
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
-        Perfil perfilBD = null;
-        Perfil perfilSave = null;
-        Authentication auth = null;
-        Usuario usuarioAuthenticado = null;
+        Perfil perfilBD;
+        Perfil perfilSave;
+        Usuario usuarioAuthenticado;
         boolean direccionEncontrada = false;
 
         //Validamos que los parametros recibidos sean mayores que 0
@@ -355,14 +324,7 @@ public class PerfilControlador {
         }
 
         //Autenticacion del usuario
-        auth = SecurityContextHolder.getContext().getAuthentication();
-        usuarioAuthenticado = this.usuarioServicio.findOneByEmail(auth.getName());
-
-        //Validamos si exite el usuario
-        if(usuarioAuthenticado == null){
-            mensajes.put("error", "No registrado");
-            return ResponseEntity.status(HttpStatus.NETWORK_AUTHENTICATION_REQUIRED).body(mensajes);
-        }
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Buscamos el perfil en la base de datos
         perfilBD = this.perfilServicio.findById(perfilId);
@@ -374,14 +336,14 @@ public class PerfilControlador {
         }
 
         //Validamos si el perfil corresponde con el usuario autenticado
-        if(perfilBD.getUsuario().getId() != usuarioAuthenticado.getId()){
+        if(!perfilBD.getUsuario().getId().equals(usuarioAuthenticado.getId())){
             mensajes.put("Denegado", "No estas autorizado a editar este recurso");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
         }
 
         //Buscamos las direcciones en el perfil
         for(Direccion d: perfilBD.getDirecciones()){
-            if(d.getId() == direccionId){
+            if(d.getId().equals(direccionId)){
                 //Hacemos los cambios en la direccion
                 d.setQuienRecibe(direccion.getQuienRecibe());
                 d.setRegion(direccion.getRegion());
@@ -389,7 +351,6 @@ public class PerfilControlador {
                 d.setPoblacion(direccion.getPoblacion());
                 d.setCalle(direccion.getCalle());
                 d.setNumero(direccion.getNumero());
-
                 d.setUpdateAt(new Date());
                 direccionEncontrada = true;
                 break;
@@ -404,13 +365,13 @@ public class PerfilControlador {
 
         try {
             perfilSave = this.perfilServicio.save(perfilBD);
+            perfilSave.getUsuario().setContrasena("");
         }catch (DataAccessException e){
             mensajes.put("Error", e.getMessage() + " " + e.getLocalizedMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
         //Creamos el mensaje de exito
-        perfilSave.getUsuario().setContrasena("");
         mensajes.put("Exito", "Se actualizo la dirección con exito");
         mensajes.put("perfil", perfilSave);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
@@ -423,10 +384,9 @@ public class PerfilControlador {
 
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
-        Perfil perfilBD = null;
-        Perfil perfilSave = null;
-        Authentication auth = null;
-        Usuario usuarioAuthenticado = null;
+        Perfil perfilBD;
+        Perfil perfilSave;
+        Usuario usuarioAuthenticado;
         boolean direccionEncontrada = false;
 
         //Validamos que los parametros recibidos sean mayores que 0
@@ -436,14 +396,7 @@ public class PerfilControlador {
         }
 
         //Autenticacion del usuario
-        auth = SecurityContextHolder.getContext().getAuthentication();
-        usuarioAuthenticado = this.usuarioServicio.findOneByEmail(auth.getName());
-
-        //Validamos si exiten el usuario
-        if(usuarioAuthenticado == null){
-            mensajes.put("Error", "No registrado");
-            return ResponseEntity.status(HttpStatus.NETWORK_AUTHENTICATION_REQUIRED).body(mensajes);
-        }
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Buscamos el perfil en la base de datos
         perfilBD = this.perfilServicio.findById(perfilId);
@@ -455,14 +408,14 @@ public class PerfilControlador {
         }
 
         //Validamos si el perfil corresponde con el usuario autenticado
-        if(perfilBD.getUsuario().getId() != usuarioAuthenticado.getId()){
+        if(!perfilBD.getUsuario().getId().equals(usuarioAuthenticado.getId())){
             mensajes.put("Denegado", "No estas autorizado a editar este recurso");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
         }
 
         //Buscamos el id de la direccion para eliminar
         for(Direccion d: perfilBD.getDirecciones()){
-            if(d.getId() == direccionId){
+            if(d.getId().equals(direccionId)){
                 perfilBD.getDirecciones().remove(d);
                 direccionEncontrada = true;
                 break;
@@ -478,16 +431,16 @@ public class PerfilControlador {
         try {
             perfilSave = this.perfilServicio.save(perfilBD);
             this.direccionServicio.delete(direccionId);
+            perfilSave.getUsuario().setContrasena("");
         }catch (DataAccessException e){
             mensajes.put("Error", e.getMessage() + " " + e.getLocalizedMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
         //Creamos el mensaje de exito
-        perfilSave.getUsuario().setContrasena("");
         mensajes.put("Exito", "Se elimino la dirección con exito");
         mensajes.put("perfil", perfilSave);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(mensajes);
     }
 
     @PatchMapping("perfiles/direcciones/{perfil_id}/{direccion_id}")
@@ -497,10 +450,9 @@ public class PerfilControlador {
 
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
-        Perfil perfilBD = null;
-        Perfil perfilSave = null;
-        Authentication auth = null;
-        Usuario usuarioAuthenticado = null;
+        Perfil perfilBD;
+        Perfil perfilSave;
+        Usuario usuarioAuthenticado;
         boolean direccionEncontrada = false;
 
         //Validamos los parametros
@@ -510,14 +462,7 @@ public class PerfilControlador {
         }
 
         //Autenticacion del usuario
-        auth = SecurityContextHolder.getContext().getAuthentication();
-        usuarioAuthenticado = this.usuarioServicio.findOneByEmail(auth.getName());
-
-        //Validamos si exite el usuario
-        if(usuarioAuthenticado == null){
-            mensajes.put("Error", "No registrado");
-            return ResponseEntity.status(HttpStatus.NETWORK_AUTHENTICATION_REQUIRED).body(mensajes);
-        }
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Buscamos el perfil en la base de datos
         perfilBD = this.perfilServicio.findById(perfilId);
@@ -529,14 +474,14 @@ public class PerfilControlador {
         }
 
         //Validamos si el perfil corresponde con el usuario autenticado
-        if(perfilBD.getUsuario().getId() != usuarioAuthenticado.getId()){
+        if(!perfilBD.getUsuario().getId().equals(usuarioAuthenticado.getId())){
             mensajes.put("Denegado", "No estas autorizado a editar este recurso");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
         }
 
         //Actualizamos la direccion principal
         for(Direccion d: perfilBD.getDirecciones()){
-            if(d.getId() == direccionId){
+            if(d.getId().equals(direccionId)){
                 d.setPrincipal(true);
                 d.setUpdateAt(new Date());
                 direccionEncontrada = true;
@@ -552,12 +497,13 @@ public class PerfilControlador {
 
         try {
             perfilSave = this.perfilServicio.save(perfilBD);
+            perfilSave.getUsuario().setContrasena("");
         }catch (DataAccessException e){
             mensajes.put("Error", e.getMessage() + " " + e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
         //Mensajes de exito
-        perfilSave.getUsuario().setContrasena("");
         mensajes.put("exito", "Se actualizo la dirección con exito.");
         mensajes.put("perfil", perfilSave);
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
