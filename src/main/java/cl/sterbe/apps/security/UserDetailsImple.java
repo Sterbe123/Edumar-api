@@ -50,10 +50,14 @@ public class UserDetailsImple implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return USUARIO.isEstado();
     }
 
     public Long getId(){
         return USUARIO.getId();
+    }
+
+    public boolean isVerify(){
+        return USUARIO.isVerificacion();
     }
 }

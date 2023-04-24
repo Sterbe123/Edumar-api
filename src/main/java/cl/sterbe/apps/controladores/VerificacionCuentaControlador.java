@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.SendFailedException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -121,8 +122,13 @@ public class VerificacionCuentaControlador {
                 Arrays.asList(new SimpleGrantedAuthority(usuario.getRol().getRol())));
 
         //Enviar el correo
-        this.correos.enviarCorreoVerificacion(usuario.getEmail(), token);
-        mensajes.put("exito", "Se envio el link de verificación a su correo.");
+        try {
+            this.correos.enviarCorreoVerificacion(usuario.getEmail(), token);
+            mensajes.put("exito", "Se envio el link de verificación a su correo.");
+        }catch (SendFailedException e){
+            mensajes.put("excepciones", e.getMessage() + " " + e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(mensajes);
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(mensajes);
     }

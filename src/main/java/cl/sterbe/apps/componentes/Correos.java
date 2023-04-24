@@ -5,13 +5,15 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
+import javax.mail.SendFailedException;
+
 @Component
 public class Correos {
 
     @Autowired
     private JavaMailSender javaMailSender;
 
-    public void enviarCorreoVerificacion(String email, String token) {
+    public void enviarCorreoVerificacion(String email, String token) throws SendFailedException {
 
         SimpleMailMessage mensaje = new SimpleMailMessage();
         String texto = "Bienvenido, porfavor hacer click al siguiente enlace para la validación de la cuenta \n" +
