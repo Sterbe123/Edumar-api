@@ -31,6 +31,8 @@ public class Usuario {
 
     private boolean estado;
 
+    private boolean verificacion;
+
     @OneToOne
     @JoinColumn(name = "rol_id", referencedColumnName = "id")
     private Rol rol;
@@ -42,4 +44,8 @@ public class Usuario {
     @Temporal(TemporalType.DATE)
     @Column(name = "update_at")
     private Date updateAt;
+
+    @Temporal(TemporalType.DATE)
+    @Column(name = "check_at")
+    private Date checkAt;
 }

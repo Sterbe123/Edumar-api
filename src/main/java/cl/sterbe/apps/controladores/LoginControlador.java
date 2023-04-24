@@ -1,12 +1,13 @@
 package cl.sterbe.apps.controladores;
 
-import cl.sterbe.apps.componentes.UsuarioAutenticado;
+import cl.sterbe.apps.componentes.Correos;
 import cl.sterbe.apps.componentes.ValidarCampos;
 import cl.sterbe.apps.componentes.ValidarContrasena;
 import cl.sterbe.apps.modelos.DTO.Rol;
 import cl.sterbe.apps.modelos.DTO.Usuario;
 import cl.sterbe.apps.modelos.servicios.RolServicio;
 import cl.sterbe.apps.modelos.servicios.UsuarioServicio;
+import cl.sterbe.apps.security.TokenUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -15,11 +16,13 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,11 +46,13 @@ public class LoginControlador {
     @Autowired
     private ValidarContrasena validarContrasena;
 
+    @Autowired
+    private Correos correos;
+
     @PostMapping("/registro/{rol}")
     public ResponseEntity<?> registro(@Valid @RequestBody Usuario usuario, BindingResult bindingResult, @PathVariable(value = "rol") Long id){
 
         Map<String, Object> mensajes = new HashMap<>();
-        Usuario usuarioNuevo;
         Rol rol;
 
         //Validamos los campos vacios o mal escritos en el e-mail
@@ -80,20 +85,26 @@ public class LoginControlador {
 
         //Establecer el estado del usuario y fecha de registro
         usuario.setEstado(true);
+        usuario.setVerificacion(false);
         usuario.setCreateAt(new Date());
 
         //Realizamos la insercion a la base de datos
         try{
-            usuarioNuevo = this.usuarioServicio.save(usuario);
+            usuario = this.usuarioServicio.save(usuario);
         }catch (DataAccessException e){ //devolver el mensaje de error
             mensajes.put("mensaje", "El correo ya esta en uso.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
 
+        //Enviamos correo de verificacion
+        String token = TokenUtils.crearTokenValidacionUsuario(usuario.getId(), usuario.getEmail(),
+                Arrays.asList(new SimpleGrantedAuthority(usuario.getRol().getRol())));
+        this.correos.enviarCorreoVerificacion(usuario.getEmail(), token);
+
         //Realizamos el mensaje correspondientes
         usuario.setContrasena("");
         mensajes.put("mensaje", "Se ha creado con exito el usuario.");
-        mensajes.put("usuario", usuarioNuevo);
+        mensajes.put("usuario", usuario);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
     }

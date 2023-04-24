@@ -10,11 +10,21 @@ public class EncriptarYDesencriptar {
     @Autowired
     private StandardPBEStringEncryptor encryptor;
 
-    public String encrypt(String data) {
-        return this.encryptor.encrypt(data);
+    /**
+     * Sirve para encriptar una cadena de texto
+     * @param texto
+     * @return
+     */
+    public String encriptar(String texto) {
+        return this.encryptor.encrypt(texto);
     }
 
-    public String decrypt(String encryptedData) {
-        return this.encryptor.decrypt(encryptedData);
+    /**
+     * Sirve para desencriptar un cadena de texto encriptada
+     * @param textoEncriptador
+     * @return
+     */
+    public String desencriptar(String textoEncriptador) {
+        return this.encryptor.decrypt(textoEncriptador);
     }
 }
