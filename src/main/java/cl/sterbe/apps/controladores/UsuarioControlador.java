@@ -102,6 +102,21 @@ public class UsuarioControlador {
         Usuario usuarioAuthenticado;
         Map<String, Object> mensajes = new HashMap<>();
 
+        //Autenticacion del usuario
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+
+        //Validar si estas habilitado
+        if(!usuarioAuthenticado.isEstado()){
+            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
+        //Validar si el usuario esta verificado
+        if(!usuarioAuthenticado.isVerificacion()){
+            mensajes.put("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
         //Validar campos
         if(bindingResult.hasErrors()){
             mensajes.put("error", this.validarCampos.validarCampos(bindingResult));
@@ -117,9 +132,6 @@ public class UsuarioControlador {
             mensajes.put("condición 4", "La contraseña debe contener por lo menos un número");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Validamos que la contraseña no sean la misma a la que va actualizar
         if(this.passwordEncoder.matches(usuario.getContrasena(), usuarioAuthenticado.getContrasena())){

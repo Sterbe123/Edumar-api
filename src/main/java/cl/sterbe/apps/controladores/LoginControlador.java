@@ -22,6 +22,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.SendFailedException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -99,7 +100,14 @@ public class LoginControlador {
         //Enviamos correo de verificacion
         String token = TokenUtils.crearTokenValidacionUsuario(usuario.getId(), usuario.getEmail(),
                 Arrays.asList(new SimpleGrantedAuthority(usuario.getRol().getRol())));
-        this.correos.enviarCorreoVerificacion(usuario.getEmail(), token);
+        try {
+            this.correos.enviarCorreoVerificacion(usuario.getEmail(), token);
+        }catch (SendFailedException e){
+            this.usuarioServicio.delete(usuario.getId());
+            mensajes.put("excepciones", e.getMessage() + " " + e.getLocalizedMessage());
+            mensajes.put("error", "Correo no válido.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(mensajes);
+        }
 
         //Realizamos el mensaje correspondientes
         usuario.setContrasena("");

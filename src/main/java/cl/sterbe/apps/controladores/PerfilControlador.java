@@ -74,14 +74,26 @@ public class PerfilControlador {
         Map<String, Object> mensajes = new HashMap<>();
         Usuario usuarioAuthenticado;
 
+        //Autenticacion del usuario
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+
+        //Validar si estas habilitado
+        if(!usuarioAuthenticado.isEstado()){
+            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
+        //Validar si el usuario esta verificado
+        if(!usuarioAuthenticado.isVerificacion()){
+            mensajes.put("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
         //Validamos que el parametro supere o sea igual a 1
         if(id <= 0){
             mensajes.put("error", "no puedes enviar un parametro 0 o inferior");
             return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
         }
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Buscamos el perfil en la base de datos
         perfil = this.perfilServicio.findById(id);
@@ -115,6 +127,21 @@ public class PerfilControlador {
         Map<String, Object> mensajes = new HashMap<>();
         Usuario usuarioAuthenticado;
 
+        //Autenticacion del usuario
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+
+        //Validar si estas habilitado
+        if(!usuarioAuthenticado.isEstado()){
+            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
+        //Validar si el usuario esta verificado
+        if(!usuarioAuthenticado.isVerificacion()){
+            mensajes.put("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
         //Validamos los campos vacios o nulos
         if(bindingResult.hasErrors()){
             mensajes.put("errores", this.validarCampos.validarCampos(bindingResult));
@@ -126,9 +153,6 @@ public class PerfilControlador {
             mensajes.put("Error", "Run no válido.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Validamos si el usuario ya tienen un perfil
         if(this.perfilServicio.findOneByUsuario(usuarioAuthenticado) != null){
@@ -166,6 +190,21 @@ public class PerfilControlador {
         Perfil perfilBD;
         Usuario usuarioAuthenticado;
 
+        //Autenticacion del usuario
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+
+        //Validar si estas habilitado
+        if(!usuarioAuthenticado.isEstado()){
+            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
+        //Validar si el usuario esta verificado
+        if(!usuarioAuthenticado.isVerificacion()){
+            mensajes.put("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
         if(id <= 0) {
             mensajes.put("Error", "El parametro no debe ser 0 ni inferior");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
@@ -182,9 +221,6 @@ public class PerfilControlador {
             mensajes.put("Error", "Run no válido.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Buscamos el perfil en la base de datos
         perfilBD = this.perfilServicio.findById(id);
@@ -234,6 +270,21 @@ public class PerfilControlador {
         Perfil perfilBD;
         Usuario usuarioAuthenticado;
 
+        //Autenticacion del usuario
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+
+        //Validar si estas habilitado
+        if(!usuarioAuthenticado.isEstado()){
+            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
+        //Validar si el usuario esta verificado
+        if(!usuarioAuthenticado.isVerificacion()){
+            mensajes.put("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
         //Validamos los parametros
         if(id <= 0) {
             mensajes.put("Error", "El parametro no debe ser 0 ni inferior");
@@ -245,9 +296,6 @@ public class PerfilControlador {
             mensajes.put("errores", this.validarCampos.validarCampos(bindingResult));
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Buscamos el perfil en la base de datos
         perfilBD = this.perfilServicio.findById(id);
@@ -306,6 +354,21 @@ public class PerfilControlador {
         Usuario usuarioAuthenticado;
         boolean direccionEncontrada = false;
 
+        //Autenticacion del usuario
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+
+        //Validar si estas habilitado
+        if(!usuarioAuthenticado.isEstado()){
+            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
+        //Validar si el usuario esta verificado
+        if(!usuarioAuthenticado.isVerificacion()){
+            mensajes.put("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
         //Validamos que los parametros recibidos sean mayores que 0
         if(perfilId <= 0 && direccionId <= 0) {
             mensajes.put("Error", "El parametro no debe ser 0 ni inferior");
@@ -317,9 +380,6 @@ public class PerfilControlador {
             mensajes.put("errores", this.validarCampos.validarCampos(bindingResult));
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Buscamos el perfil en la base de datos
         perfilBD = this.perfilServicio.findById(perfilId);
@@ -383,14 +443,26 @@ public class PerfilControlador {
         Usuario usuarioAuthenticado;
         boolean direccionEncontrada = false;
 
+        //Autenticacion del usuario
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+
+        //Validar si estas habilitado
+        if(!usuarioAuthenticado.isEstado()){
+            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
+        //Validar si el usuario esta verificado
+        if(!usuarioAuthenticado.isVerificacion()){
+            mensajes.put("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
         //Validamos que los parametros recibidos sean mayores que 0
         if(perfilId <= 0 && direccionId <= 0) {
             mensajes.put("Error", "El parametro no debe ser 0 ni inferior");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Buscamos el perfil en la base de datos
         perfilBD = this.perfilServicio.findById(perfilId);
@@ -448,14 +520,26 @@ public class PerfilControlador {
         Usuario usuarioAuthenticado;
         boolean direccionEncontrada = false;
 
+        //Autenticacion del usuario
+        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+
+        //Validar si estas habilitado
+        if(!usuarioAuthenticado.isEstado()){
+            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
+        //Validar si el usuario esta verificado
+        if(!usuarioAuthenticado.isVerificacion()){
+            mensajes.put("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+        }
+
         //Validamos los parametros
         if(perfilId <= 0 && direccionId <= 0){
             mensajes.put("error", "El parametro no debe ser inferior o igual a 0");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
         }
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Buscamos el perfil en la base de datos
         perfilBD = this.perfilServicio.findById(perfilId);

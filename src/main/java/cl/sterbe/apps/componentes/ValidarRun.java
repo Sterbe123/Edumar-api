@@ -11,7 +11,7 @@ public class ValidarRun {
      * @return boolean
      */
     public boolean validarRun(String run){
-        Integer digitoVerificado;
+        int digitoVerificado;
         int suma = 0;
         int multiplicar = 2;
         int resultado;
