@@ -35,6 +35,8 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests()
                 .requestMatchers(HttpMethod.POST, "/api/registro/{rol}").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/logout").permitAll()
+                .requestMatchers(HttpMethod.GET, "api/verificacion-cuenta/{token}").permitAll()
+                .requestMatchers(HttpMethod.GET, "api/re-enviar-verificacion/{email}").permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()

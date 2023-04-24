@@ -2,7 +2,7 @@ INSERT INTO roles (rol) VALUES ('ROLE_ADMINISTRADOR');
 INSERT INTO roles (rol) VALUES ('ROLE_TRABAJADOR');
 INSERT INTO roles (rol) VALUES ('ROLE_CLIENTE');
 
-INSERT INTO usuarios (email,contrasena,estado,rol_id,create_at,update_at) VALUES ('rodrigo@gmail.com','$2a$10$t5z9vYOlRBVAc8GS5nFMMuLktYmYtd1fNsI3g7qwEnwjmhyoxfsQG',1,1,NOW(),null);
+INSERT INTO usuarios (email,contrasena,estado,verificacion,rol_id,create_at,update_at,check_at) VALUES ('rodrigo@gmail.com','$2a$10$t5z9vYOlRBVAc8GS5nFMMuLktYmYtd1fNsI3g7qwEnwjmhyoxfsQG',1,1,1,NOW(),null,NOW());
 
 INSERT INTO perfiles (run,nombre,apellido_paterno,apellido_materno,contacto,usuario_id,create_at,update_at) VALUES ("18580892-0","Rodrigo","Lazo","Fredes","991676062",1,NOW(),null);
 
