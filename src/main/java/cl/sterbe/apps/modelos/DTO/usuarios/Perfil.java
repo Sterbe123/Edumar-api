@@ -1,6 +1,5 @@
-package cl.sterbe.apps.modelos.DTO;
+package cl.sterbe.apps.modelos.DTO.usuarios;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -8,12 +7,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "direcciones")
-public class Direccion {
+@Table(name = "perfiles")
+public class Perfil {
 
     //Atributos
     @Id
@@ -22,35 +22,32 @@ public class Direccion {
 
     @NotNull
     @NotEmpty
-    @Column(name = "quien_recibe")
-    private String quienRecibe;
-
-    @NotNull
-    @Column(name = "region_id")
-    private int region;
-
-    @NotNull
-    @Column(name = "comuna_id")
-    private int comuna;
+    @Column(unique = true)
+    private String run;
 
     @NotNull
     @NotEmpty
-    private String poblacion;
+    @Column(nullable = false)
+    private String nombre;
 
     @NotNull
     @NotEmpty
-    private String calle;
+    @Column(name = "apellido_paterno")
+    private String apellidoPaterno;
+
+    @Column(name = "apellido_materno")
+    private String apellidoMaterno;
 
     @NotNull
     @NotEmpty
-    private String numero;
+    private String contacto;
 
-    private boolean principal;
+    @OneToOne
+    @JoinColumn(name = "usuario_id", referencedColumnName = "id")
+    private Usuario usuario;
 
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "perfiles_id", referencedColumnName = "id")
-    private Perfil perfil;
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<Direccion> direcciones;
 
     @Temporal(TemporalType.DATE)
     @Column(name = "create_at")

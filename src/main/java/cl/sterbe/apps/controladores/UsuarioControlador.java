@@ -3,8 +3,8 @@ package cl.sterbe.apps.controladores;
 import cl.sterbe.apps.componentes.UsuarioAutenticado;
 import cl.sterbe.apps.componentes.ValidarCampos;
 import cl.sterbe.apps.componentes.ValidarContrasena;
-import cl.sterbe.apps.modelos.DTO.Usuario;
-import cl.sterbe.apps.modelos.servicios.UsuarioServicio;
+import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
+import cl.sterbe.apps.modelos.servicios.usuariosServicio.UsuarioServicio;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -99,15 +99,12 @@ public class UsuarioControlador {
     public ResponseEntity<?> editarContrasena(@Valid @RequestBody Usuario usuario, BindingResult bindingResult){
 
         //Atributos
-        Usuario usuarioAuthenticado;
         Map<String, Object> mensajes = new HashMap<>();
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            mensajes.put("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
         }
 

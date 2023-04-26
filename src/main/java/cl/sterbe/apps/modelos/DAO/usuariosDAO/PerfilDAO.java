@@ -1,7 +1,7 @@
-package cl.sterbe.apps.modelos.DAO;
+package cl.sterbe.apps.modelos.DAO.usuariosDAO;
 
-import cl.sterbe.apps.modelos.DTO.Perfil;
-import cl.sterbe.apps.modelos.DTO.Usuario;
+import cl.sterbe.apps.modelos.DTO.usuarios.Perfil;
+import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;

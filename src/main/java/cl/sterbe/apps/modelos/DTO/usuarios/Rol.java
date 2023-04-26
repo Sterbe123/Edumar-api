@@ -1,6 +1,8 @@
-package cl.sterbe.apps.modelos.DTO;
+package cl.sterbe.apps.modelos.DTO.usuarios;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,6 +17,8 @@ public class Rol {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @NotNull
+    @NotEmpty
+    @Column(unique = true)
     private String rol;
 }

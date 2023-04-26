@@ -1,8 +1,8 @@
-package cl.sterbe.apps.modelos.servicios.implementacion;
+package cl.sterbe.apps.modelos.servicios.usuariosServicio.implementacion;
 
-import cl.sterbe.apps.modelos.DAO.RolDAO;
-import cl.sterbe.apps.modelos.DTO.Rol;
-import cl.sterbe.apps.modelos.servicios.RolServicio;
+import cl.sterbe.apps.modelos.DAO.usuariosDAO.RolDAO;
+import cl.sterbe.apps.modelos.DTO.usuarios.Rol;
+import cl.sterbe.apps.modelos.servicios.usuariosServicio.RolServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
