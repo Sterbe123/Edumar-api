@@ -1,6 +1,6 @@
 package cl.sterbe.apps.security;
 
-import cl.sterbe.apps.modelos.DTO.Usuario;
+import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

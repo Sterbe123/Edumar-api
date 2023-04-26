@@ -3,12 +3,12 @@ package cl.sterbe.apps.controladores;
 import cl.sterbe.apps.componentes.UsuarioAutenticado;
 import cl.sterbe.apps.componentes.ValidarCampos;
 import cl.sterbe.apps.componentes.ValidarRun;
-import cl.sterbe.apps.modelos.DTO.Direccion;
-import cl.sterbe.apps.modelos.DTO.Perfil;
-import cl.sterbe.apps.modelos.DTO.Usuario;
-import cl.sterbe.apps.modelos.servicios.DireccionServicio;
-import cl.sterbe.apps.modelos.servicios.PerfilServicio;
-import cl.sterbe.apps.modelos.servicios.UsuarioServicio;
+import cl.sterbe.apps.modelos.DTO.usuarios.Direccion;
+import cl.sterbe.apps.modelos.DTO.usuarios.Perfil;
+import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
+import cl.sterbe.apps.modelos.servicios.usuariosServicio.DireccionServicio;
+import cl.sterbe.apps.modelos.servicios.usuariosServicio.PerfilServicio;
+import cl.sterbe.apps.modelos.servicios.usuariosServicio.UsuarioServicio;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -72,14 +72,11 @@ public class PerfilControlador {
         //Atributos
         Perfil perfil;
         Map<String, Object> mensajes = new HashMap<>();
-        Usuario usuarioAuthenticado;
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            mensajes.put("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
         }
 
@@ -125,14 +122,11 @@ public class PerfilControlador {
 
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
-        Usuario usuarioAuthenticado;
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            mensajes.put("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
         }
 
@@ -188,14 +182,11 @@ public class PerfilControlador {
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
-        Usuario usuarioAuthenticado;
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            mensajes.put("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
         }
 
@@ -268,14 +259,11 @@ public class PerfilControlador {
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
-        Usuario usuarioAuthenticado;
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            mensajes.put("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
         }
 
@@ -351,15 +339,12 @@ public class PerfilControlador {
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
-        Usuario usuarioAuthenticado;
         boolean direccionEncontrada = false;
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            mensajes.put("error", "Tu cuenta se encuentra suspendido temporalmente, contacte con el administrador.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
         }
 
@@ -440,15 +425,12 @@ public class PerfilControlador {
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
-        Usuario usuarioAuthenticado;
         boolean direccionEncontrada = false;
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            mensajes.put("error", "Tu cuenta se encuentra suspendido temporalmente, contacte con el administrador.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
         }
 
@@ -517,11 +499,8 @@ public class PerfilControlador {
         //Atributos
         Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
-        Usuario usuarioAuthenticado;
         boolean direccionEncontrada = false;
-
-        //Autenticacion del usuario
-        usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){

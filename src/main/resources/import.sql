@@ -9,3 +9,8 @@ INSERT INTO perfiles (run,nombre,apellido_paterno,apellido_materno,contacto,usua
 INSERT INTO direcciones (quien_recibe,region_id,comuna_id,poblacion,calle,numero,principal,perfiles_id,create_at) VALUES ("Rodrigo Lazo",4,10,"La Aguada Centro","El Litre","433",1,1,NOW());
 
 INSERT INTO perfiles_direcciones (perfil_id,direcciones_id) VALUES (1,1);
+
+INSERT INTO categorias (nombre,estado) VALUE ('Filtros',1);
+INSERT INTO categorias (nombre,estado) VALUE ('Aceites',1);
+INSERT INTO categorias (nombre,estado) VALUE ('Lubricantes',1);
+INSERT INTO categorias (nombre,estado) VALUE ('Neumaticos',1);

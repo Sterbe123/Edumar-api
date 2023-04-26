@@ -2,8 +2,8 @@ package cl.sterbe.apps.controladores;
 
 import cl.sterbe.apps.componentes.Correos;
 import cl.sterbe.apps.componentes.ValidarCampos;
-import cl.sterbe.apps.modelos.DTO.Usuario;
-import cl.sterbe.apps.modelos.servicios.UsuarioServicio;
+import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
+import cl.sterbe.apps.modelos.servicios.usuariosServicio.UsuarioServicio;
 import cl.sterbe.apps.security.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;

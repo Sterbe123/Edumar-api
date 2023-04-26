@@ -1,5 +1,6 @@
-package cl.sterbe.apps.modelos.DTO;
+package cl.sterbe.apps.modelos.DTO.usuarios;
 
+import cl.sterbe.apps.modelos.DTO.usuarios.Rol;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;

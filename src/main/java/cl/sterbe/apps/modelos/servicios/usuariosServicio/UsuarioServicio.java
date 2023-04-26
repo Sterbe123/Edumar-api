@@ -1,8 +1,6 @@
-package cl.sterbe.apps.modelos.servicios;
+package cl.sterbe.apps.modelos.servicios.usuariosServicio;
 
-import cl.sterbe.apps.modelos.DTO.Usuario;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
 
 import java.util.List;
 import java.util.Optional;

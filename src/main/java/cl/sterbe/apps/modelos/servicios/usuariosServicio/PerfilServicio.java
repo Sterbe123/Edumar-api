@@ -1,10 +1,9 @@
-package cl.sterbe.apps.modelos.servicios;
+package cl.sterbe.apps.modelos.servicios.usuariosServicio;
 
-import cl.sterbe.apps.modelos.DTO.Perfil;
-import cl.sterbe.apps.modelos.DTO.Usuario;
+import cl.sterbe.apps.modelos.DTO.usuarios.Perfil;
+import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface PerfilServicio {
 
