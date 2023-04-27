@@ -1,5 +1,6 @@
 package cl.sterbe.apps.controladores;
 
+import cl.sterbe.apps.componentes.Mensaje;
 import cl.sterbe.apps.componentes.UsuarioAutenticado;
 import cl.sterbe.apps.componentes.ValidarCampos;
 import cl.sterbe.apps.componentes.ValidarContrasena;
@@ -39,27 +40,32 @@ public class UsuarioControlador {
     @Autowired
     private UsuarioAutenticado usuarioAutenticado;
 
+    @Autowired
+    private Mensaje mensajes;
+
     @GetMapping("usuarios")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
     public ResponseEntity<?> buscarUsuarios(){
 
         //Atributos
         List<Usuario> usuarios = this.usuarioServicio.findAll();
-        Map<String, Object> mensajes = new HashMap<>();
+
+        //Limpiamos los mensajes
+        this.mensajes.limpiar();
 
         //Validamos si la lista esta vacia
         if(usuarios.isEmpty()){
-            mensajes.put("error", "La lista de usuarios esta vacia");
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(mensajes);
+            this.mensajes.agregar("error", "La lista de usuarios esta vacia");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(this.mensajes.mostrarMensajes());
         }
 
         //setear las contraseña a vacío
         usuarios.forEach(u -> u.setContrasena(""));
 
         //Mandar los mensajes de exito
-        mensajes.put("exito", "Se encontraron los usuarios con exito");
-        mensajes.put("usuarios", usuarios);
-        return ResponseEntity.status(HttpStatus.OK).body(mensajes);
+        this.mensajes.agregar("exito", "Se encontraron los usuarios con exito");
+        this.mensajes.agregar("usuarios", usuarios);
+        return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
     @GetMapping("usuarios/{id}")
@@ -68,12 +74,14 @@ public class UsuarioControlador {
 
         //Atributos
         Usuario usuario;
-        Map<String, Object> mensajes = new HashMap<>();
+
+        //Limpiamos los mensajes
+        this.mensajes.limpiar();
 
         //Validar parametros
         if(id <= 0){
-            mensajes.put("error", "el parametro debe ser mayor a 0");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("error", "el parametro debe ser mayor a 0");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Buscamos el usuario en la base de datos
@@ -81,17 +89,17 @@ public class UsuarioControlador {
 
         //Validamos el usuario
         if(usuario == null){
-            mensajes.put("error", "No se encontro el usuario");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes);
+            this.mensajes.agregar("error", "No se encontro el usuario");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
         }
 
         //Establecer la contraseña
         usuario.setContrasena("");
 
         //Mandar mensajes de exito
-        mensajes.put("exito", "Se encontro el usuario con exito");
-        mensajes.put("usuario", usuario);
-        return ResponseEntity.status(HttpStatus.OK).body(mensajes);
+        this.mensajes.agregar("exito", "Se encontro el usuario con exito");
+        this.mensajes.agregar("usuario", usuario);
+        return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
     @PutMapping("usuarios/editar-contrasena")
@@ -99,41 +107,43 @@ public class UsuarioControlador {
     public ResponseEntity<?> editarContrasena(@Valid @RequestBody Usuario usuario, BindingResult bindingResult){
 
         //Atributos
-        Map<String, Object> mensajes = new HashMap<>();
         Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+
+        //Limpiamos los mensajes
+        this.mensajes.limpiar();
 
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validar si el usuario esta verificado
         if(!usuarioAuthenticado.isVerificacion()){
-            mensajes.put("error", "Tu cuenta aun no esta verificada.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validar campos
         if(bindingResult.hasErrors()){
-            mensajes.put("error", this.validarCampos.validarCampos(bindingResult));
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("error", this.validarCampos.validarCampos(bindingResult));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos si la contraseña cumple con los requerimientos
         if(!this.validarContrasena.validarContrasena(usuario.getContrasena())){
-            mensajes.put("error", "Error en la contraseña");
-            mensajes.put("condición 1", "La contraseña debe ser superior a 8 caracter");
-            mensajes.put("condición 2", "La contraseña debe contener por lo menos una mayúscula");
-            mensajes.put("condición 3", "La contraseña debe contener minúsculas");
-            mensajes.put("condición 4", "La contraseña debe contener por lo menos un número");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("error", "Error en la contraseña");
+            this.mensajes.agregar("condición 1", "La contraseña debe ser superior a 8 caracter");
+            this.mensajes.agregar("condición 2", "La contraseña debe contener por lo menos una mayúscula");
+            this.mensajes.agregar("condición 3", "La contraseña debe contener minúsculas");
+            this.mensajes.agregar("condición 4", "La contraseña debe contener por lo menos un número");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos que la contraseña no sean la misma a la que va actualizar
         if(this.passwordEncoder.matches(usuario.getContrasena(), usuarioAuthenticado.getContrasena())){
-            mensajes.put("error", "La contraseña no debe ser igual a la anterio");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("error", "La contraseña no debe ser igual a la anterio");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //cambiamos la contraseña y la encriptamos
@@ -145,14 +155,14 @@ public class UsuarioControlador {
             usuarioAuthenticado = this.usuarioServicio.save(usuarioAuthenticado);
             usuarioAuthenticado.setContrasena("");
         }catch (DataAccessException e){
-            mensajes.put("error", e.getMessage() + " " + e.getLocalizedMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("error", e.getMessage() + " " + e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(this.mensajes.mostrarMensajes());
         }
 
         //mensaje de exito
-        mensajes.put("exito", "Se actualizo la contraseña correctamente");
-        mensajes.put("usuario", usuarioAuthenticado);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
+        this.mensajes.agregar("exito", "Se actualizo la contraseña correctamente");
+        this.mensajes.agregar("usuario", usuarioAuthenticado);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 
     @PatchMapping("usuarios/deshabilitar/{id}")
@@ -161,12 +171,14 @@ public class UsuarioControlador {
 
         //Atributo
         Usuario usuarioBD;
-        Map<String, Object> mensajes = new HashMap<>();
+
+        //Limpiamos los mensajes
+        this.mensajes.limpiar();
 
         //Validar el parametro
         if(id <= 0){
-            mensajes.put("error", "El parametro no debe ser 0 o inferior");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("error", "El parametro no debe ser 0 o inferior");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Buscamos el usuario en la base de dato
@@ -174,20 +186,20 @@ public class UsuarioControlador {
 
         //Validamos el usuario
         if(usuarioBD == null){
-            mensajes.put("error", "No se encontro el usuario");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("error", "No se encontro el usuario");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos que el usuario a deshabilitar no sea un administrador
         if(usuarioBD.getRol().getRol().equals("ROLE_ADMINISTRADOR")){
-            mensajes.put("error", "No puedes deshabilitar a un administrador");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("error", "No puedes deshabilitar a un administrador");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos si el usuario se encuentre habilitado
         if(!usuarioBD.isEstado()){
-            mensajes.put("error", "El usuario ya se encuentra deshabilitado");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("error", "El usuario ya se encuentra deshabilitado");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }else{
             usuarioBD.setEstado(false);
         }
@@ -197,14 +209,14 @@ public class UsuarioControlador {
             usuarioBD = this.usuarioServicio.save(usuarioBD);
             usuarioBD.setContrasena("");
         }catch (DataAccessException e){
-            mensajes.put("error", e.getMessage() + " " + e.getLocalizedMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("error", e.getMessage() + " " + e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(this.mensajes.mostrarMensajes());
         }
 
         //mensajes de exito
-        mensajes.put("exito", "El usuario se deshabilito correctamente");
-        mensajes.put("usuario", usuarioBD);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
+        this.mensajes.agregar("exito", "El usuario se deshabilito correctamente");
+        this.mensajes.agregar("usuario", usuarioBD);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 
     @PatchMapping("usuarios/habilitar/{id}")
@@ -213,12 +225,14 @@ public class UsuarioControlador {
 
         //Atributo
         Usuario usuarioBD;
-        Map<String, Object> mensajes = new HashMap<>();
+
+        //Limpiar los mensajes
+        this.mensajes.limpiar();
 
         //Validar el parametro
         if(id <= 0){
-            mensajes.put("error", "El parametro no debe ser 0 o inferior");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("error", "El parametro no debe ser 0 o inferior");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Buscamos el usuario en la base de datoa
@@ -226,20 +240,20 @@ public class UsuarioControlador {
 
         //Validamos el usuario
         if(usuarioBD == null){
-            mensajes.put("error", "No se encontro el usuario");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("error", "No se encontro el usuario");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos que el usuario a deshabilitar no sea un administrador
         if(usuarioBD.getRol().getRol().equals("ROLE_ADMINISTRADOR")){
-            mensajes.put("error", "No puedes deshabilitar un administrador");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("error", "No puedes deshabilitar un administrador");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos si el usuario se encuentre habilitado
         if(usuarioBD.isEstado()){
-            mensajes.put("error", "El usuario ya se encuentra habilitado");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("error", "El usuario ya se encuentra habilitado");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }else{
             usuarioBD.setEstado(true);
         }
@@ -249,13 +263,13 @@ public class UsuarioControlador {
             usuarioBD = this.usuarioServicio.save(usuarioBD);
             usuarioBD.setContrasena("");
         }catch (DataAccessException e){
-            mensajes.put("error", e.getMessage() + " " + e.getLocalizedMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("error", e.getMessage() + " " + e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(this.mensajes.mostrarMensajes());
         }
 
         //mensajes de exito
-        mensajes.put("exito", "El usuario se habilito correctamente");
-        mensajes.put("usuario", usuarioBD);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
+        this.mensajes.agregar("exito", "El usuario se habilito correctamente");
+        this.mensajes.agregar("usuario", usuarioBD);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 }

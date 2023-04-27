@@ -42,7 +42,7 @@ public class Producto {
     @Column(name = "codigo_barra", unique = true)
     private String codigoBarra;
 
-    @Column(name = "codigo_interno")
+    @Column(name = "codigo_interno", unique = true)
     private String codigoInterno;
 
     @Temporal(TemporalType.DATE)
