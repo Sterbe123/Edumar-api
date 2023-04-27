@@ -1,5 +1,6 @@
 package cl.sterbe.apps.controladores;
 
+import cl.sterbe.apps.componentes.Mensaje;
 import cl.sterbe.apps.componentes.UsuarioAutenticado;
 import cl.sterbe.apps.componentes.ValidarCampos;
 import cl.sterbe.apps.componentes.ValidarRun;
@@ -43,26 +44,31 @@ public class PerfilControlador {
     @Autowired
     private UsuarioAutenticado usuarioAutenticado;
 
+    @Autowired
+    private Mensaje mensajes;
+
     @GetMapping("perfiles")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
     public ResponseEntity<?> buscarPerfiles(){
 
         //Atributos
         List<Perfil> perfiles = this.perfilServicio.findAll();
-        Map<String, Object> mensajes = new HashMap<>();
+
+        //Limpiamos los mensajes
+        this.mensajes.limpiar();
 
         //Validar si la lista viene vacia de la base de datos
         if(perfiles.isEmpty()){
-            mensajes.put("error", "No existen perfiles.");
-            mensajes.put("perfiles", perfiles);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(mensajes);
+            this.mensajes.agregar("error", "No existen perfiles.");
+            this.mensajes.agregar("perfiles", perfiles);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(this.mensajes.mostrarMensajes());
         }
 
         //Enviar mensaje de exito y los perfiles
         perfiles.forEach(p -> p.getUsuario().setContrasena(""));
-        mensajes.put("exito", "Se han encontrado los perfiles.");
-        mensajes.put("perfiles", perfiles);
-        return ResponseEntity.status(HttpStatus.OK).body(mensajes);
+        this.mensajes.agregar("exito", "Se han encontrado los perfiles.");
+        this.mensajes.agregar("perfiles", perfiles);
+        return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
     @GetMapping("perfiles/{id}")
@@ -71,25 +77,27 @@ public class PerfilControlador {
 
         //Atributos
         Perfil perfil;
-        Map<String, Object> mensajes = new HashMap<>();
         Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+
+        //Limpiamos los mensajes
+        this.mensajes.limpiar();
 
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validar si el usuario esta verificado
         if(!usuarioAuthenticado.isVerificacion()){
-            mensajes.put("error", "Tu cuenta aun no esta verificada.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos que el parametro supere o sea igual a 1
         if(id <= 0){
-            mensajes.put("error", "no puedes enviar un parametro 0 o inferior");
-            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("error", "no puedes enviar un parametro 0 o inferior");
+            return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Buscamos el perfil en la base de datos
@@ -97,23 +105,23 @@ public class PerfilControlador {
 
         //Validamos si exite el perfil en la base de datos
         if(perfil == null){
-            mensajes.put("error", "No se encontro el recurso solicitado");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes);
+            this.mensajes.agregar("error", "No se encontro el recurso solicitado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos al usuario
         if(!usuarioAuthenticado.getRol().getRol().equals("ROLE_ADMINISTRADOR")){
             if(!perfil.getUsuario().getId().equals(usuarioAuthenticado.getId())){
-                mensajes.put("denegado", "No tienes acceso al recurso solicitado");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+                this.mensajes.agregar("denegado", "No tienes acceso al recurso solicitado");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
             }
         }
 
         //enviar los mensajes de exito y el perfil
         perfil.getUsuario().setContrasena("");
-        mensajes.put("exito", "Se ha encontro con exito el perfil.");
-        mensajes.put("perfil", perfil);
-        return ResponseEntity.status(HttpStatus.OK).body(mensajes);
+        this.mensajes.agregar("exito", "Se ha encontro con exito el perfil.");
+        this.mensajes.agregar("perfil", perfil);
+        return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
     @PostMapping("perfiles")
@@ -121,37 +129,39 @@ public class PerfilControlador {
     public ResponseEntity<?> guardarPerfil(@Valid @RequestBody Perfil perfil, BindingResult bindingResult){
 
         //Atributos
-        Map<String, Object> mensajes = new HashMap<>();
         Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+
+        //Limpiamos los mensajes
+        this.mensajes.limpiar();
 
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validar si el usuario esta verificado
         if(!usuarioAuthenticado.isVerificacion()){
-            mensajes.put("error", "Tu cuenta aun no esta verificada.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos los campos vacios o nulos
         if(bindingResult.hasErrors()){
-            mensajes.put("errores", this.validarCampos.validarCampos(bindingResult));
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("errores", this.validarCampos.validarCampos(bindingResult));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos si el run es correcto
         if(!this.validarRun.validarRun(perfil.getRun())){
-            mensajes.put("Error", "Run no válido.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("Error", "Run no válido.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos si el usuario ya tienen un perfil
         if(this.perfilServicio.findOneByUsuario(usuarioAuthenticado) != null){
-            mensajes.put("error", "El usuario ya tiene un perfil registrado");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("error", "El usuario ya tiene un perfil registrado");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Agregamos el usuario correspondiente al perfil y fecha de registro
@@ -164,14 +174,14 @@ public class PerfilControlador {
             perfil = this.perfilServicio.save(perfil);
             perfil.getUsuario().setContrasena("");
         } catch (DataIntegrityViolationException e) {
-            mensajes.put("error", "el run ya esta en uso");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("error", "el run ya esta en uso");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(this.mensajes.mostrarMensajes());
         }
 
         //Mandamos el mensaje de exito
-        mensajes.put("Exito", "Se creo el perfil con exito.");
-        mensajes.put("perfil", perfil);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
+        this.mensajes.agregar("Exito", "Se creo el perfil con exito.");
+        this.mensajes.agregar("perfil", perfil);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 
     @PutMapping("perfiles/{id}")
@@ -180,37 +190,39 @@ public class PerfilControlador {
                                           @PathVariable Long id){
 
         //Atributos
-        Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
         Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
+        //Lipiaremos los mensajes
+        this.mensajes.limpiar();
+
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validar si el usuario esta verificado
         if(!usuarioAuthenticado.isVerificacion()){
-            mensajes.put("error", "Tu cuenta aun no esta verificada.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         if(id <= 0) {
-            mensajes.put("Error", "El parametro no debe ser 0 ni inferior");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("Error", "El parametro no debe ser 0 ni inferior");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos los campos vacios o nulos
         if(bindingResult.hasErrors()){
-            mensajes.put("errores", this.validarCampos.validarCampos(bindingResult));
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("errores", this.validarCampos.validarCampos(bindingResult));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos si el run existe
         if(!this.validarRun.validarRun(perfil.getRun())){
-            mensajes.put("Error", "Run no válido.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("Error", "Run no válido.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Buscamos el perfil en la base de datos
@@ -218,14 +230,14 @@ public class PerfilControlador {
 
         //Validamos si exite el perfil
         if(perfilBD == null){
-            mensajes.put("Error", "No se encontro el perfil.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("Error", "No se encontro el perfil.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos si el perfil corresponde con el usuario autenticado
         if(!perfilBD.getUsuario().getId().equals(usuarioAuthenticado.getId())){
-            mensajes.put("Denegado", "No estas autorizado a editar este recurso");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("Denegado", "No estas autorizado a editar este recurso");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Actualizamos los datos
@@ -241,14 +253,14 @@ public class PerfilControlador {
             perfilBD = this.perfilServicio.save(perfilBD);
             perfilBD.getUsuario().setContrasena("");
         }catch (DataAccessException e){
-            mensajes.put("Error", "El run ya esta en uso");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("Error", "El run ya esta en uso");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(this.mensajes.mostrarMensajes());
         }
 
         //Actualizamos base de datos
-        mensajes.put("Exito", "Se actualizo con exito perfil.");
-        mensajes.put("perfil", perfilBD);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
+        this.mensajes.agregar("Exito", "Se actualizo con exito perfil.");
+        this.mensajes.agregar("perfil", perfilBD);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 
     @PostMapping("perfiles/direcciones/{perfil_id}")
@@ -257,32 +269,34 @@ public class PerfilControlador {
                                                 @PathVariable(value = "perfil_id") Long id){
 
         //Atributos
-        Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
         Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
+        //Limpiar mensajes
+        this.mensajes.limpiar();
+
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta se encuentra suspendida temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validar si el usuario esta verificado
         if(!usuarioAuthenticado.isVerificacion()){
-            mensajes.put("error", "Tu cuenta aun no esta verificada.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos los parametros
         if(id <= 0) {
-            mensajes.put("Error", "El parametro no debe ser 0 ni inferior");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("Error", "El parametro no debe ser 0 ni inferior");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos los campos vacios o nulos
         if(bindingResult.hasErrors()){
-            mensajes.put("errores", this.validarCampos.validarCampos(bindingResult));
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("errores", this.validarCampos.validarCampos(bindingResult));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Buscamos el perfil en la base de datos
@@ -290,14 +304,14 @@ public class PerfilControlador {
 
         //Validamos si exite el perfil
         if(perfilBD == null){
-            mensajes.put("Error", "No se encontro el perfil.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("Error", "No se encontro el perfil.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos si el perfil corresponde con el usuario autenticado
         if(!perfilBD.getUsuario().getId().equals(usuarioAuthenticado.getId())){
-            mensajes.put("Denegado", "No estas autorizado a editar este recurso");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("Denegado", "No estas autorizado a editar este recurso");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //seteamos las fecha de creacion
@@ -305,8 +319,8 @@ public class PerfilControlador {
         direccion.setPerfil(perfilBD);
 
         if(perfilBD.getDirecciones().size() == 5){
-            mensajes.put("error", "Superaste el límite de direcciones");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("error", "Superaste el límite de direcciones");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(this.mensajes.mostrarMensajes());
         }else if(perfilBD.getDirecciones().isEmpty()){
             direccion.setPrincipal(true);
         }else{
@@ -320,14 +334,14 @@ public class PerfilControlador {
             perfilBD = this.perfilServicio.save(perfilBD);
             perfilBD.getUsuario().setContrasena("");
         }catch (DataAccessException e){
-            mensajes.put("error", e.getMessage() + " " + e.getLocalizedMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("error", e.getMessage() + " " + e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(this.mensajes.mostrarMensajes());
         }
 
         //Mandamos el mensaje de exito
-        mensajes.put("exito", "Se agrego la direción con exito");
-        mensajes.put("perfil", perfilBD);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
+        this.mensajes.agregar("exito", "Se agrego la direción con exito");
+        this.mensajes.agregar("perfil", perfilBD);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 
     @PutMapping("perfiles/direcciones/{perfil_id}/{direccion_id}")
@@ -337,33 +351,35 @@ public class PerfilControlador {
                                              @PathVariable(value = "direccion_id") Long direccionId){
 
         //Atributos
-        Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
         boolean direccionEncontrada = false;
         Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
+        //Limpiar mensajes
+        this.mensajes.limpiar();
+
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra suspendido temporalmente, contacte con el administrador.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta se encuentra suspendido temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validar si el usuario esta verificado
         if(!usuarioAuthenticado.isVerificacion()){
-            mensajes.put("error", "Tu cuenta aun no esta verificada.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos que los parametros recibidos sean mayores que 0
         if(perfilId <= 0 && direccionId <= 0) {
-            mensajes.put("Error", "El parametro no debe ser 0 ni inferior");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("Error", "El parametro no debe ser 0 ni inferior");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos los campos de la direccion
         if(bindingResult.hasErrors()){
-            mensajes.put("errores", this.validarCampos.validarCampos(bindingResult));
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("errores", this.validarCampos.validarCampos(bindingResult));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Buscamos el perfil en la base de datos
@@ -371,14 +387,14 @@ public class PerfilControlador {
 
         //Validamos si exite el perfil
         if(perfilBD == null){
-            mensajes.put("Error", "No se encontro el perfil.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("Error", "No se encontro el perfil.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos si el perfil corresponde con el usuario autenticado
         if(!perfilBD.getUsuario().getId().equals(usuarioAuthenticado.getId())){
-            mensajes.put("Denegado", "No estas autorizado a editar este recurso");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("Denegado", "No estas autorizado a editar este recurso");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Buscamos las direcciones en el perfil
@@ -399,22 +415,22 @@ public class PerfilControlador {
 
         //Validamos di encontro la direccion en el perfil
         if(!direccionEncontrada){
-            mensajes.put("Error", "Dirección no encontrada");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes);
+            this.mensajes.agregar("Error", "Dirección no encontrada");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
         }
 
         try {
             perfilBD = this.perfilServicio.save(perfilBD);
             perfilBD.getUsuario().setContrasena("");
         }catch (DataAccessException e){
-            mensajes.put("Error", e.getMessage() + " " + e.getLocalizedMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("Error", e.getMessage() + " " + e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(this.mensajes.mostrarMensajes());
         }
 
         //Creamos el mensaje de exito
-        mensajes.put("Exito", "Se actualizo la dirección con exito");
-        mensajes.put("perfil", perfilBD);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
+        this.mensajes.agregar("Exito", "Se actualizo la dirección con exito");
+        this.mensajes.agregar("perfil", perfilBD);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 
     @DeleteMapping("perfiles/direcciones/{perfil_id}/{direccion_id}")
@@ -423,27 +439,29 @@ public class PerfilControlador {
                                                @PathVariable(value = "direccion_id") Long direccionId){
 
         //Atributos
-        Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
         boolean direccionEncontrada = false;
         Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
+        //Limpiar mensajes
+        this.mensajes.limpiar();
+
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra suspendido temporalmente, contacte con el administrador.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta se encuentra suspendido temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validar si el usuario esta verificado
         if(!usuarioAuthenticado.isVerificacion()){
-            mensajes.put("error", "Tu cuenta aun no esta verificada.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos que los parametros recibidos sean mayores que 0
         if(perfilId <= 0 && direccionId <= 0) {
-            mensajes.put("Error", "El parametro no debe ser 0 ni inferior");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("Error", "El parametro no debe ser 0 ni inferior");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Buscamos el perfil en la base de datos
@@ -451,14 +469,14 @@ public class PerfilControlador {
 
         //Validamos si exite el perfil
         if(perfilBD == null){
-            mensajes.put("Error", "No se encontro el perfil.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("Error", "No se encontro el perfil.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos si el perfil corresponde con el usuario autenticado
         if(!perfilBD.getUsuario().getId().equals(usuarioAuthenticado.getId())){
-            mensajes.put("Denegado", "No estas autorizado a editar este recurso");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("Denegado", "No estas autorizado a editar este recurso");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Buscamos el id de la direccion para eliminar
@@ -472,8 +490,8 @@ public class PerfilControlador {
 
         //Validamos si no pudo encontrar la direccion
         if(!direccionEncontrada){
-            mensajes.put("error", "Dirección no encontrada");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes);
+            this.mensajes.agregar("error", "Dirección no encontrada");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
         }
 
         try {
@@ -481,14 +499,14 @@ public class PerfilControlador {
             this.direccionServicio.delete(direccionId);
             perfilBD.getUsuario().setContrasena("");
         }catch (DataAccessException e){
-            mensajes.put("Error", e.getMessage() + " " + e.getLocalizedMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("Error", e.getMessage() + " " + e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(this.mensajes.mostrarMensajes());
         }
 
         //Creamos el mensaje de exito
-        mensajes.put("Exito", "Se elimino la dirección con exito");
-        mensajes.put("perfil", perfilBD);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(mensajes);
+        this.mensajes.agregar("Exito", "Se elimino la dirección con exito");
+        this.mensajes.agregar("perfil", perfilBD);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(this.mensajes.mostrarMensajes());
     }
 
     @PatchMapping("perfiles/direcciones/{perfil_id}/{direccion_id}")
@@ -497,27 +515,29 @@ public class PerfilControlador {
                                                       @PathVariable(value = "direccion_id") Long direccionId){
 
         //Atributos
-        Map<String, Object> mensajes = new HashMap<>();
         Perfil perfilBD;
         boolean direccionEncontrada = false;
         Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
+        //Limpiar mensajes
+        this.mensajes.limpiar();
+
         //Validar si estas habilitado
         if(!usuarioAuthenticado.isEstado()){
-            mensajes.put("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta se encuentra deshabilitada temporalmente, contacte con el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validar si el usuario esta verificado
         if(!usuarioAuthenticado.isVerificacion()){
-            mensajes.put("error", "Tu cuenta aun no esta verificada.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("error", "Tu cuenta aun no esta verificada.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos los parametros
         if(perfilId <= 0 && direccionId <= 0){
-            mensajes.put("error", "El parametro no debe ser inferior o igual a 0");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("error", "El parametro no debe ser inferior o igual a 0");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Buscamos el perfil en la base de datos
@@ -525,14 +545,14 @@ public class PerfilControlador {
 
         //Validamos si exite el perfil
         if(perfilBD == null){
-            mensajes.put("Error", "No se encontro el perfil.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("Error", "No se encontro el perfil.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
         }
 
         //Validamos si el perfil corresponde con el usuario autenticado
         if(!perfilBD.getUsuario().getId().equals(usuarioAuthenticado.getId())){
-            mensajes.put("Denegado", "No estas autorizado a editar este recurso");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes);
+            this.mensajes.agregar("Denegado", "No estas autorizado a editar este recurso");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
         }
 
         //Actualizamos la direccion principal
@@ -547,21 +567,21 @@ public class PerfilControlador {
         }
 
         if(!direccionEncontrada){
-            mensajes.put("error", "Dirección no encontrada");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes);
+            this.mensajes.agregar("error", "Dirección no encontrada");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
         }
 
         try {
             perfilBD = this.perfilServicio.save(perfilBD);
             perfilBD.getUsuario().setContrasena("");
         }catch (DataAccessException e){
-            mensajes.put("Error", e.getMessage() + " " + e.getLocalizedMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("Error", e.getMessage() + " " + e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(this.mensajes.mostrarMensajes());
         }
 
         //Mensajes de exito
-        mensajes.put("exito", "Se actualizo la dirección con exito.");
-        mensajes.put("perfil", perfilBD);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
+        this.mensajes.agregar("exito", "Se actualizo la dirección con exito.");
+        this.mensajes.agregar("perfil", perfilBD);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 }

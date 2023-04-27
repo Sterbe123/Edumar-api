@@ -1,6 +1,7 @@
 package cl.sterbe.apps.controladores;
 
 import cl.sterbe.apps.componentes.Correos;
+import cl.sterbe.apps.componentes.Mensaje;
 import cl.sterbe.apps.componentes.ValidarCampos;
 import cl.sterbe.apps.componentes.ValidarContrasena;
 import cl.sterbe.apps.modelos.DTO.usuarios.Rol;
@@ -50,26 +51,32 @@ public class LoginControlador {
     @Autowired
     private Correos correos;
 
+    @Autowired
+    private Mensaje mensajes;
+
     @PostMapping("/registro/{rol}")
     public ResponseEntity<?> registro(@Valid @RequestBody Usuario usuario, BindingResult bindingResult, @PathVariable(value = "rol") Long id){
 
-        Map<String, Object> mensajes = new HashMap<>();
+        //Atributos
         Rol rol;
+
+        //Limpiar mensajes
+        this.mensajes.limpiar();
 
         //Validamos los campos vacios o mal escritos en el e-mail
         if(bindingResult.hasErrors()){
-            mensajes.put("errores", this.validarCampos.validarCampos(bindingResult));
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("errores", this.validarCampos.validarCampos(bindingResult));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes);
         }
 
         //Validamos si la contraseña cumple con los requerimientos
         if(!this.validarContrasena.validarContrasena(usuario.getContrasena())){
-            mensajes.put("error", "Error en la contraseña");
-            mensajes.put("condición 1", "La contraseña debe ser superior a 8 caracter");
-            mensajes.put("condición 2", "La contraseña debe contener por lo menos una mayúscula");
-            mensajes.put("condición 3", "La contraseña debe contener minúsculas");
-            mensajes.put("condición 4", "La contraseña debe contener por lo menos un número");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensajes);
+            this.mensajes.agregar("error", "Error en la contraseña");
+            this.mensajes.agregar("condición 1", "La contraseña debe ser superior a 8 caracter");
+            this.mensajes.agregar("condición 2", "La contraseña debe contener por lo menos una mayúscula");
+            this.mensajes.agregar("condición 3", "La contraseña debe contener minúsculas");
+            this.mensajes.agregar("condición 4", "La contraseña debe contener por lo menos un número");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //Asignamos rol al usuario *** Atención esto es solo momentaneo (de prueba)
@@ -77,8 +84,8 @@ public class LoginControlador {
         if(rol != null){
             usuario.setRol(rol);
         }else{
-            mensajes.put("error", "No se pudo Encontrar el rol.");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("error", "No se pudo Encontrar el rol.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(this.mensajes.mostrarMensajes());
         }
 
         //Encriptar Informacion del usuario para la insersion en la base de datos
@@ -92,9 +99,10 @@ public class LoginControlador {
         //Realizamos la insercion a la base de datos
         try{
             usuario = this.usuarioServicio.save(usuario);
+            usuario.setContrasena("");
         }catch (DataAccessException e){ //devolver el mensaje de error
-            mensajes.put("mensaje", "El correo ya esta en uso.");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensajes);
+            this.mensajes.agregar("mensaje", "El correo ya esta en uso.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(this.mensajes.mostrarMensajes());
         }
 
         //Enviamos correo de verificacion
@@ -104,17 +112,15 @@ public class LoginControlador {
             this.correos.enviarCorreoVerificacion(usuario.getEmail(), token);
         }catch (SendFailedException e){
             this.usuarioServicio.delete(usuario.getId());
-            mensajes.put("excepciones", e.getMessage() + " " + e.getLocalizedMessage());
-            mensajes.put("error", "Correo no válido.");
-            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(mensajes);
+            this.mensajes.agregar("excepciones", e.getMessage() + " " + e.getLocalizedMessage());
+            this.mensajes.agregar("error", "Correo no válido.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(this.mensajes.mostrarMensajes());
         }
 
         //Realizamos el mensaje correspondientes
-        usuario.setContrasena("");
-        mensajes.put("mensaje", "Se ha creado con exito el usuario.");
-        mensajes.put("usuario", usuario);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(mensajes);
+        this.mensajes.agregar("mensaje", "Se ha creado con exito el usuario.");
+        this.mensajes.agregar("usuario", usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 
     @PostMapping("/logout")
