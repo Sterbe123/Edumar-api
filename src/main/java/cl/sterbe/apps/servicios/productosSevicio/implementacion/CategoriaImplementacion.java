@@ -1,8 +1,9 @@
-package cl.sterbe.apps.modelos.servicios.productosSevicio.implementacion;
+package cl.sterbe.apps.servicios.productosSevicio.implementacion;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoSeEncontroPojo;
 import cl.sterbe.apps.modelos.DAO.productosDAO.CategoriaDAO;
 import cl.sterbe.apps.modelos.DTO.productos.Categoria;
-import cl.sterbe.apps.modelos.servicios.productosSevicio.CategoriaServicio;
+import cl.sterbe.apps.servicios.productosSevicio.CategoriaServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,7 @@ public class CategoriaImplementacion implements CategoriaServicio {
     @Override
     @Transactional(readOnly = true)
     public Categoria findById(Long id) {
-        return this.categoriaDAO.findById(id).orElse(null);
+        return this.categoriaDAO.findById(id).orElseThrow(() -> new NoSeEncontroPojo("categoria"));
     }
 
     @Override

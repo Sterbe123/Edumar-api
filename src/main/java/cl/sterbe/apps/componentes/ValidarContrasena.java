@@ -1,16 +1,17 @@
 package cl.sterbe.apps.componentes;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorContrasena;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ValidarContrasena {
 
     /**
-     * Validamos la contraseña
+     *
      * @param contrasena
-     * @return
+     * @throws ErrorContrasena
      */
-    public boolean validarContrasena(String contrasena){
+    public void validarContrasena(String contrasena) throws ErrorContrasena {
 
         boolean contieneMayusculas = false;
         boolean contieneMinusculas = false;
@@ -36,27 +37,25 @@ public class ValidarContrasena {
 
                     //Validar si contriene una comilla
                     if(contrasena.substring(i, (i+1)).equals("'")){
-                        return false;
+                        throw new ErrorContrasena("No se permiten comillas simples");
                     }
                 }
             }
 
             if(!contieneMayusculas){
-                return false;
+                throw new ErrorContrasena("No contienen mayúsculas");
             }
 
             if(!contieneMinusculas){
-                return false;
+                throw new ErrorContrasena("No contienen minúsculas");
             }
 
             if(!contieneNumeros){
-                return false;
+                throw new ErrorContrasena("No contiene un número");
             }
 
         }else{
-            return false;
+            throw new ErrorContrasena("Debe contener más de 8 catacter.");
         }
-
-        return true;
     }
 }

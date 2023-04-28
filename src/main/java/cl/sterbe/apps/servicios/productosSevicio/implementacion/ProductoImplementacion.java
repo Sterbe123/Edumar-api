@@ -1,8 +1,9 @@
-package cl.sterbe.apps.modelos.servicios.productosSevicio.implementacion;
+package cl.sterbe.apps.servicios.productosSevicio.implementacion;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoSeEncontroPojo;
 import cl.sterbe.apps.modelos.DAO.productosDAO.ProductoDAO;
 import cl.sterbe.apps.modelos.DTO.productos.Producto;
-import cl.sterbe.apps.modelos.servicios.productosSevicio.ProductoServicio;
+import cl.sterbe.apps.servicios.productosSevicio.ProductoServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,7 @@ public class ProductoImplementacion implements ProductoServicio {
     @Override
     @Transactional(readOnly = true)
     public Producto findById(Long id) {
-        return this.productoDAO.findById(id).orElse(null);
+        return this.productoDAO.findById(id).orElseThrow(() -> new NoSeEncontroPojo("producto"));
     }
 
     @Override

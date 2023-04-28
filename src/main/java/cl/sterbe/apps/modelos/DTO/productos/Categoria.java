@@ -32,4 +32,10 @@ public class Categoria {
     @Temporal(TemporalType.DATE)
     @Column(name = "update_at")
     private Date updateAt;
+
+    @PrePersist
+    public void prePersist(){
+        this.estado = true;
+        this.createAt = new Date();
+    }
 }
