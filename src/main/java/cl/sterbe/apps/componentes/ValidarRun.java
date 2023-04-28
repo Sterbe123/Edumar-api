@@ -1,16 +1,13 @@
 package cl.sterbe.apps.componentes;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorRun;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ValidarRun {
 
-    /**
-     * Si el run es correcto es true.
-     * @param run
-     * @return boolean
-     */
-    public boolean validarRun(String run){
+
+    public void validarRun(String run) throws ErrorRun {
         int digitoVerificado;
         int suma = 0;
         int multiplicar = 2;
@@ -39,14 +36,12 @@ public class ValidarRun {
 
                 resultado = (11 - resultado);
 
-                if(resultado == digitoVerificado){
-                    return true;
+                if(resultado != digitoVerificado){
+                    throw new ErrorRun();
                 }
             }
-        }catch (NumberFormatException e){
-            return false;
+        }catch (NumberFormatException | ErrorRun e){
+            throw new ErrorRun();
         }
-
-        return false;
     }
 }

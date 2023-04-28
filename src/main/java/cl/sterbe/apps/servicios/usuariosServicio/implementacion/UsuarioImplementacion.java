@@ -1,8 +1,9 @@
-package cl.sterbe.apps.modelos.servicios.usuariosServicio.implementacion;
+package cl.sterbe.apps.servicios.usuariosServicio.implementacion;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoSeEncontroPojo;
 import cl.sterbe.apps.modelos.DAO.usuariosDAO.UsuarioDAO;
 import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
-import cl.sterbe.apps.modelos.servicios.usuariosServicio.UsuarioServicio;
+import cl.sterbe.apps.servicios.usuariosServicio.UsuarioServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,7 @@ public class UsuarioImplementacion implements UsuarioServicio {
     @Override
     @Transactional(readOnly = true)
     public Usuario findById(Long id) {
-        return this.usuarioDAO.findById(id).orElse(null);
+        return this.usuarioDAO.findById(id).orElseThrow(() -> new NoSeEncontroPojo("usuario"));
     }
 
     @Override

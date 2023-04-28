@@ -52,4 +52,9 @@ public class Producto {
     @Temporal(TemporalType.DATE)
     @Column(name = "update_at")
     private Date updateAt;
+
+    @PrePersist
+    public void prePersist(){
+        this.createAt = new Date();
+    }
 }

@@ -1,7 +1,8 @@
 package cl.sterbe.apps.security;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoSeEncontroPojo;
 import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
-import cl.sterbe.apps.modelos.servicios.usuariosServicio.UsuarioServicio;
+import cl.sterbe.apps.servicios.usuariosServicio.UsuarioServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,7 +20,7 @@ public class UserDetailsServiceImple implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
        Usuario usuario = this.usuarioServicio.findOneByEmail(email)
-               .orElseThrow(() -> new UsernameNotFoundException("El usuario con el email: " + email + ", no exite."));
+               .orElseThrow(() -> new NoSeEncontroPojo("usuario"));
        return new UserDetailsImple(usuario);
     }
 }

@@ -1,9 +1,11 @@
-package cl.sterbe.apps.modelos.servicios.usuariosServicio.implementacion;
+package cl.sterbe.apps.servicios.usuariosServicio.implementacion;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorPerfilRegistrado;
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoSeEncontroPojo;
 import cl.sterbe.apps.modelos.DAO.usuariosDAO.PerfilDAO;
 import cl.sterbe.apps.modelos.DTO.usuarios.Perfil;
 import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
-import cl.sterbe.apps.modelos.servicios.usuariosServicio.PerfilServicio;
+import cl.sterbe.apps.servicios.usuariosServicio.PerfilServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +27,7 @@ public class PerfilImplementacion implements PerfilServicio {
     @Override
     @Transactional(readOnly = true)
     public Perfil findById(Long id) {
-        return this.perfilDAO.findById(id).orElse(null);
+        return this.perfilDAO.findById(id).orElseThrow(() -> new NoSeEncontroPojo("perfil"));
     }
 
     @Override
@@ -41,6 +43,6 @@ public class PerfilImplementacion implements PerfilServicio {
     @Override
     @Transactional(readOnly = true)
     public Perfil findOneByUsuario(Usuario usuario) {
-        return this.perfilDAO.findOneByUsuario(usuario).orElse(null);
+        return this.perfilDAO.findOneByUsuario(usuario).orElseThrow(ErrorPerfilRegistrado::new);
     }
 }

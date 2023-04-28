@@ -10,7 +10,7 @@ public class Mensaje {
 
     private Map<String, Object> mensajes;
 
-    public Mensaje(){
+    private Mensaje(){
         this.mensajes = new HashMap<>();
     }
 

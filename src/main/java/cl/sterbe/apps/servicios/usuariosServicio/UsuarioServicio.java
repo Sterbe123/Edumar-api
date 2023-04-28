@@ -1,4 +1,4 @@
-package cl.sterbe.apps.modelos.servicios.usuariosServicio;
+package cl.sterbe.apps.servicios.usuariosServicio;
 
 import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
 

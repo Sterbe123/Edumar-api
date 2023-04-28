@@ -1,4 +1,4 @@
-package cl.sterbe.apps.modelos.servicios.productosSevicio;
+package cl.sterbe.apps.servicios.productosSevicio;
 
 import cl.sterbe.apps.modelos.DTO.productos.Categoria;
 
