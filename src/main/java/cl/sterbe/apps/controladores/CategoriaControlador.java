@@ -1,14 +1,13 @@
 package cl.sterbe.apps.controladores;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorListaVacia;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaHabilitado;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaVerificado;
 import cl.sterbe.apps.componentes.Mensaje;
 import cl.sterbe.apps.componentes.UsuarioAutenticado;
 import cl.sterbe.apps.modelos.DTO.productos.Categoria;
-import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
 import cl.sterbe.apps.servicios.productosSevicio.CategoriaServicio;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,28 +35,18 @@ public class CategoriaControlador {
 
     @GetMapping("/categorias")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> listarCategorias() throws NoEstaVerificado, NoEstaHabilitado {
-
-        //Atributos
-        List<Categoria> categorias = this.categoriaServicio.findAll();
-        Usuario usuarioAutenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+    public ResponseEntity<?> listarCategorias() throws NoEstaVerificado, NoEstaHabilitado, ErrorListaVacia {
 
         //Validamos usuario estado y verificacion
         this.usuarioAutenticado.autenticarUsuario();
+        this.usuarioAutenticado.verificarUsuario();
 
-        //filtramos las categorias disponibles
-        categorias = categorias.stream().filter(c -> c.isEstado()).collect(Collectors.toList());
-
-        //Limpiar mensajes
-        this.mensajes.limpiar();
-
-        //Validar si la lsita esta vacia
-        if(categorias.isEmpty()){
-            this.mensajes.agregar("error", "No se encontraron las categorias");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
-        }
+        //Atributos
+        List<Categoria> categorias = this.categoriaServicio.findAll();
+        categorias = categorias.stream().filter(Categoria::isEstado).collect(Collectors.toList());
 
         //mensajes de exito
+        this.mensajes.limpiar();
         this.mensajes.agregar("exito","Se encontraron las categorias");
         this.mensajes.agregar("categorias", categorias);
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
@@ -67,26 +56,18 @@ public class CategoriaControlador {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> mostrarCategoria(@PathVariable Long id) throws NoEstaVerificado, NoEstaHabilitado {
 
-        //Atributos
-        Categoria categoria;
-        Usuario usuarioAutenticado = this.usuarioAutenticado.getUsuarioAutenticado();
-
         //Validamos usuario estado y verificacion
         this.usuarioAutenticado.autenticarUsuario();
+        this.usuarioAutenticado.verificarUsuario();
+
+        //Atributos
+        Categoria categoria;
 
         //Buscamos la categoria
         categoria = this.categoriaServicio.findById(id);
 
-        //Limpiar mensajes
-        this.mensajes.limpiar();
-
-        //Validamos si esta disponible
-        if(!categoria.isEstado()){
-            this.mensajes.agregar("error", "Categoria no disponible");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
-        }
-
         //mensaje de exito
+        this.mensajes.limpiar();
         this.mensajes.agregar("exito", "Se encontro la categoria");
         this.mensajes.agregar("categoria", categoria);
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
@@ -94,7 +75,8 @@ public class CategoriaControlador {
 
     @PostMapping("/categorias")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> guardarCategoria(@Valid @RequestBody Categoria categoria, BindingResult result) throws BindException {
+    public ResponseEntity<?> guardarCategoria(@Valid @RequestBody Categoria categoria, BindingResult result)
+            throws BindException {
 
         //Validar campos de la categoria
         if(result.hasErrors()){

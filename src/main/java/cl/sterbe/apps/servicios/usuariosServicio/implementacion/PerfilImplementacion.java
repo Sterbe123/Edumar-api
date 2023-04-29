@@ -1,6 +1,7 @@
 package cl.sterbe.apps.servicios.usuariosServicio.implementacion;
 
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorEditarRecurso;
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorListaVacia;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorPerfilRegistrado;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoSeEncontroPojo;
 import cl.sterbe.apps.modelos.DAO.usuariosDAO.PerfilDAO;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PerfilImplementacion implements PerfilServicio {
@@ -21,14 +23,20 @@ public class PerfilImplementacion implements PerfilServicio {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Perfil> findAll() {
-        return (List<Perfil>) this.perfilDAO.findAll();
+    public List<Perfil> findAll() throws ErrorListaVacia {
+        List<Perfil>  perfiles = (List<Perfil>) this.perfilDAO.findAll();
+        perfiles.forEach(u -> u.getUsuario().setContrasena(""));
+        return Optional.of(perfiles)
+                .filter(p -> !p.isEmpty())
+                .orElseThrow(() -> new ErrorListaVacia("perfiles"));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Perfil findById(Long id) {
-        return this.perfilDAO.findById(id).orElseThrow(() -> new NoSeEncontroPojo("perfil"));
+        Perfil perfil = this.perfilDAO.findById(id).orElseThrow(() -> new NoSeEncontroPojo("perfil"));
+        perfil.getUsuario().setContrasena("");
+        return perfil;
     }
 
     @Override

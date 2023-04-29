@@ -1,5 +1,6 @@
 package cl.sterbe.apps.servicios.usuariosServicio.implementacion;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorListaVacia;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoSeEncontroPojo;
 import cl.sterbe.apps.modelos.DAO.usuariosDAO.UsuarioDAO;
 import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
@@ -19,14 +20,20 @@ public class UsuarioImplementacion implements UsuarioServicio {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Usuario> findAll() {
-        return (List<Usuario>) this.usuarioDAO.findAll();
+    public List<Usuario> findAll() throws ErrorListaVacia {
+        List<Usuario> usuarios = (List<Usuario>) this.usuarioDAO.findAll();
+        usuarios.forEach(u -> u.setContrasena(""));
+        return Optional.of(usuarios)
+                .filter(u -> !u.isEmpty())
+                .orElseThrow(() -> new ErrorListaVacia("usuarios"));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Usuario findById(Long id) {
-        return this.usuarioDAO.findById(id).orElseThrow(() -> new NoSeEncontroPojo("usuario"));
+        Usuario usuario = this.usuarioDAO.findById(id).orElseThrow(() -> new NoSeEncontroPojo("usuario"));
+        usuario.setContrasena("");
+        return usuario;
     }
 
     @Override

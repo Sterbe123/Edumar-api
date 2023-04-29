@@ -26,13 +26,16 @@ public class UsuarioAutenticado {
      * @return Usuario
      */
     public Usuario getUsuarioAutenticado(){
-        auth = SecurityContextHolder.getContext().getAuthentication();
-        usuario = this.usuarioServicio.findOneByEmail(auth.getName())
-                .orElseThrow(() -> new NoSeEncontroPojo("usuario"));
-        return usuario;
+        return this.usuario;
     }
 
-    public void autenticarUsuario() throws NoEstaHabilitado, NoEstaVerificado {
+    public void autenticarUsuario(){
+        auth = SecurityContextHolder.getContext().getAuthentication();
+        this.usuario = this.usuarioServicio.findOneByEmail(auth.getName())
+                .orElseThrow(() -> new NoSeEncontroPojo("usuario"));
+    }
+
+    public void verificarUsuario() throws NoEstaHabilitado, NoEstaVerificado {
         if(!this.usuario.isEstado()){
             throw new NoEstaHabilitado();
         }
