@@ -2,7 +2,6 @@ package cl.sterbe.apps.servicios.usuariosServicio.implementacion;
 
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorEditarRecurso;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorListaVacia;
-import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorPerfilRegistrado;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoSeEncontroPojo;
 import cl.sterbe.apps.modelos.DAO.usuariosDAO.PerfilDAO;
 import cl.sterbe.apps.modelos.DTO.usuarios.Perfil;
