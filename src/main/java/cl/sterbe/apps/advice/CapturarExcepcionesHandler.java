@@ -7,6 +7,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -137,6 +138,15 @@ public class CapturarExcepcionesHandler {
         this.mensajes.limpiar();
 
         this.mensajes.agregar("error", "No estas autorizado para editar este recurso.");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
+    }
+
+    @ExceptionHandler(InternalAuthenticationServiceException.class)
+    public ResponseEntity<?> errorAutenticar(InternalAuthenticationServiceException e){
+        //Limpiar mensajes
+        this.mensajes.limpiar();
+
+        this.mensajes.agregar("error", "Usuario no registrado o autenticado");
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
     }
 }

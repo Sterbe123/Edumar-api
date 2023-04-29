@@ -15,4 +15,8 @@ public interface ProductoServicio {
     List<Producto> saveAll(List<Producto> productos);
 
     void delete(Long id);
+
+    Producto findOneByCodigoInterno(String codigoInterno);
+
+    Producto findOneByCodigoBarra(String codigoBarra);
 }
