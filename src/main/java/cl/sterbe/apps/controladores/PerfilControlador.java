@@ -105,7 +105,7 @@ public class PerfilControlador {
     @PostMapping("perfiles")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> guardarPerfil(@Valid @RequestBody Perfil perfil, BindingResult bindingResult)
-            throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorRun {
+            throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorRun, ErrorEditarRecurso {
 
         //Atributos
         Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();

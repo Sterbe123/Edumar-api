@@ -42,4 +42,15 @@ public class ProductoImplementacion implements ProductoServicio {
     public void delete(Long id) {
         this.productoDAO.deleteById(id);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Producto findOneByCodigoInterno(String codigoInterno) {
+        return this.productoDAO.findOneByCodigoInterno(codigoInterno).orElseThrow(() -> new NoSeEncontroPojo("producto"));
+    }
+
+    @Override
+    public Producto findOneByCodigoBarra(String codigoBarra) {
+        return this.productoDAO.findOneByCodigoBarra(codigoBarra).orElseThrow(() -> new NoSeEncontroPojo("producto"));
+    }
 }

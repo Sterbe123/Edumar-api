@@ -1,5 +1,6 @@
 package cl.sterbe.apps.servicios.usuariosServicio.implementacion;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorEditarRecurso;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorPerfilRegistrado;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoSeEncontroPojo;
 import cl.sterbe.apps.modelos.DAO.usuariosDAO.PerfilDAO;
@@ -42,7 +43,10 @@ public class PerfilImplementacion implements PerfilServicio {
 
     @Override
     @Transactional(readOnly = true)
-    public Perfil findOneByUsuario(Usuario usuario) {
-        return this.perfilDAO.findOneByUsuario(usuario).orElseThrow(ErrorPerfilRegistrado::new);
+    public void findOneByUsuario(Usuario usuario) throws ErrorEditarRecurso {
+        Perfil perfil = this.perfilDAO.findOneByUsuario(usuario).orElse(null);
+        if(perfil != null){
+            throw new ErrorEditarRecurso();
+        }
     }
 }
