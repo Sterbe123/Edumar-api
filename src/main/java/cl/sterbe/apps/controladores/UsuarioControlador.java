@@ -1,6 +1,7 @@
 package cl.sterbe.apps.controladores;
 
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorContrasena;
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorListaVacia;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaHabilitado;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaVerificado;
 import cl.sterbe.apps.componentes.Mensaje;
@@ -19,7 +20,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-import java.util.List;
 
 @RestController
 @RequestMapping("api/")
@@ -42,26 +42,12 @@ public class UsuarioControlador {
 
     @GetMapping("usuarios")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> buscarUsuarios(){
-
-        //Atributos
-        List<Usuario> usuarios = this.usuarioServicio.findAll();
-
-        //Limpiamos los mensajes
-        this.mensajes.limpiar();
-
-        //Validamos si la lista esta vacia
-        if(usuarios.isEmpty()){
-            this.mensajes.agregar("error", "La lista de usuarios esta vacia");
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(this.mensajes.mostrarMensajes());
-        }
-
-        //setear las contraseña a vacío
-        usuarios.forEach(u -> u.setContrasena(""));
+    public ResponseEntity<?> buscarUsuarios() throws ErrorListaVacia {
 
         //Mandar los mensajes de exito
+        this.mensajes.limpiar();
         this.mensajes.agregar("exito", "Se encontraron los usuarios con exito");
-        this.mensajes.agregar("usuarios", usuarios);
+        this.mensajes.agregar("usuarios", this.usuarioServicio.findAll());
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
@@ -69,19 +55,10 @@ public class UsuarioControlador {
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
     public ResponseEntity<?> buscarUsuario(@PathVariable Long id){
 
-        //Atributos
-        Usuario usuario;
-
-        //Buscamos el usuario en la base de datos
-        usuario = this.usuarioServicio.findById(id);
-
-        //Establecer la contraseña
-        usuario.setContrasena("");
-
         //Mandar mensajes de exito
         this.mensajes.limpiar();
         this.mensajes.agregar("exito", "Se encontro el usuario con exito");
-        this.mensajes.agregar("usuario", usuario);
+        this.mensajes.agregar("usuario", this.usuarioServicio.findById(id));
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
@@ -90,11 +67,9 @@ public class UsuarioControlador {
     public ResponseEntity<?> editarContrasena(@Valid @RequestBody Usuario usuario, BindingResult bindingResult)
             throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorContrasena {
 
-        //Atributos
-        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
-
         //Validar si estas habilitado y verificado
         this.usuarioAutenticado.autenticarUsuario();
+        this.usuarioAutenticado.verificarUsuario();
 
         //Validar campos
         if(bindingResult.hasErrors()){
@@ -108,22 +83,22 @@ public class UsuarioControlador {
         this.mensajes.limpiar();
 
         //Validamos que la contraseña no sean la misma a la que va actualizar
-        if(this.passwordEncoder.matches(usuario.getContrasena(), usuarioAuthenticado.getContrasena())){
+        if(this.passwordEncoder.matches(usuario.getContrasena(), this.usuarioAutenticado.getUsuarioAutenticado().getContrasena())){
             this.mensajes.agregar("error", "La contraseña no debe ser igual a la anterio");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
 
         //cambiamos la contraseña y la encriptamos
-        usuarioAuthenticado.setContrasena(this.passwordEncoder.encode(usuario.getContrasena()));
-        usuarioAuthenticado.setUpdateAt(new Date());
+        this.usuarioAutenticado.getUsuarioAutenticado().setContrasena(this.passwordEncoder.encode(usuario.getContrasena()));
+        this.usuarioAutenticado.getUsuarioAutenticado().setUpdateAt(new Date());
 
         //hacemos la persistencia
-        usuarioAuthenticado = this.usuarioServicio.save(usuarioAuthenticado);
-        usuarioAuthenticado.setContrasena("");
+        usuario = this.usuarioServicio.save(this.usuarioAutenticado.getUsuarioAutenticado());
+        usuario.setContrasena("");
 
         //mensaje de exito
         this.mensajes.agregar("exito", "Se actualizo la contraseña correctamente");
-        this.mensajes.agregar("usuario", usuarioAuthenticado);
+        this.mensajes.agregar("usuario", usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 

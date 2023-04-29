@@ -149,4 +149,13 @@ public class CapturarExcepcionesHandler {
         this.mensajes.agregar("error", "Usuario no registrado o autenticado");
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
     }
+
+    @ExceptionHandler(ErrorListaVacia.class)
+    public ResponseEntity<?> errorListaVacia(ErrorListaVacia e){
+        //Limpiar mensajes
+        this.mensajes.limpiar();
+
+        this.mensajes.agregar("error", "No se encontraron " + e.getNombre());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
+    }
 }

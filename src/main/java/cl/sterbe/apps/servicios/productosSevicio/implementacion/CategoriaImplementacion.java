@@ -1,5 +1,6 @@
 package cl.sterbe.apps.servicios.productosSevicio.implementacion;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorListaVacia;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoSeEncontroPojo;
 import cl.sterbe.apps.modelos.DAO.productosDAO.CategoriaDAO;
 import cl.sterbe.apps.modelos.DTO.productos.Categoria;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CategoriaImplementacion implements CategoriaServicio {
@@ -18,8 +20,10 @@ public class CategoriaImplementacion implements CategoriaServicio {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Categoria> findAll() {
-        return (List<Categoria>) this.categoriaDAO.findAll();
+    public List<Categoria> findAll() throws ErrorListaVacia {
+        return Optional.of((List<Categoria>) this.categoriaDAO.findAll())
+                .filter(c -> !c.isEmpty())
+                .orElseThrow(() -> new ErrorListaVacia("categorias"));
     }
 
     @Override

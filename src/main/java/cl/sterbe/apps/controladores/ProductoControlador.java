@@ -1,12 +1,14 @@
 package cl.sterbe.apps.controladores;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorListaVacia;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaHabilitado;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaVerificado;
 import cl.sterbe.apps.componentes.Hora;
 import cl.sterbe.apps.componentes.Mensaje;
 import cl.sterbe.apps.componentes.UsuarioAutenticado;
+import cl.sterbe.apps.modelos.DTO.productos.Categoria;
 import cl.sterbe.apps.modelos.DTO.productos.Producto;
-import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
+import cl.sterbe.apps.servicios.productosSevicio.CategoriaServicio;
 import cl.sterbe.apps.servicios.productosSevicio.ProductoServicio;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +20,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -26,6 +27,9 @@ public class ProductoControlador {
 
     @Autowired
     private ProductoServicio productoServicio;
+
+    @Autowired
+    private CategoriaServicio categoriaServicio;
 
     @Autowired
     private Mensaje mensajes;
@@ -38,27 +42,16 @@ public class ProductoControlador {
 
     @GetMapping("/productos")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> productos() throws NoEstaVerificado, NoEstaHabilitado {
-
-        //Atributos
-        List<Producto> productos = this.productoServicio.findAll();
-        Usuario usuarioAutenticado = this.usuarioAutenticado.getUsuarioAutenticado();
+    public ResponseEntity<?> productos() throws NoEstaVerificado, NoEstaHabilitado, ErrorListaVacia {
 
         //Validar estado del usuario y verificaicon
         this.usuarioAutenticado.autenticarUsuario();
-
-        //Limpiar mensajes
-        this.mensajes.limpiar();
-
-        //Validar si la lista se encuentra vacia
-        if(productos.isEmpty()){
-            this.mensajes.agregar("error", "No se encontraron productos.");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
-        }
+        this.usuarioAutenticado.verificarUsuario();
 
         //Mensajes de exito
+        this.mensajes.limpiar();
         this.mensajes.agregar("exito", "Se encontraron los productos.");
-        this.mensajes.agregar("productos", productos);
+        this.mensajes.agregar("productos", this.productoServicio.findAll());
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
@@ -67,20 +60,14 @@ public class ProductoControlador {
     public ResponseEntity<?> producto(@PathVariable Long id)
             throws NoEstaVerificado, NoEstaHabilitado {
 
-        //Atributos
-        Producto productoBD;
-        Usuario usuarioAutenticado = this.usuarioAutenticado.getUsuarioAutenticado();
-
         //Validar estado del usuario y verificaion
         this.usuarioAutenticado.autenticarUsuario();
-
-        //buscamos el producto en la base de datos
-        productoBD = this.productoServicio.findById(id);
+        this.usuarioAutenticado.verificarUsuario();
 
         //Mensajes de exito
         this.mensajes.limpiar();
         this.mensajes.agregar("exito", "Se encontro el producto correctamente.");
-        this.mensajes.agregar("producto", productoBD);
+        this.mensajes.agregar("producto", this.productoServicio.findById(id));
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
@@ -89,20 +76,14 @@ public class ProductoControlador {
     public ResponseEntity<?> buscarPorCodigointerno(@PathVariable String codigoInterno)
             throws NoEstaVerificado, NoEstaHabilitado {
 
-        //Atributos
-        Producto productoBD;
-        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
-
         //Validar estado y verificion
         this.usuarioAutenticado.autenticarUsuario();
-
-        //Buscamos el producto en la base de datos
-        productoBD = this.productoServicio.findOneByCodigoInterno(codigoInterno);
+        this.usuarioAutenticado.verificarUsuario();
 
         //Mensajes
         this.mensajes.limpiar();
         this.mensajes.agregar("exito", "Se encontro el producto correctamente.");
-        this.mensajes.agregar("producto", productoBD);
+        this.mensajes.agregar("producto", this.productoServicio.findOneByCodigoInterno(codigoInterno));
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
@@ -111,20 +92,14 @@ public class ProductoControlador {
     public ResponseEntity<?> buscarPorCodigoBarra(@PathVariable String codigoBarra)
             throws NoEstaVerificado, NoEstaHabilitado {
 
-        //Atributos
-        Producto productoBD;
-        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
-
         //Validar estado y verificion
         this.usuarioAutenticado.autenticarUsuario();
-
-        //Buscar producto en la base de datos
-        productoBD = this.productoServicio.findOneByCodigoBarra(codigoBarra);
+        this.usuarioAutenticado.verificarUsuario();
 
         //Mensajes
         this.mensajes.limpiar();
         this.mensajes.agregar("exito", "Se encontro el producto correctamente.");
-        this.mensajes.agregar("producto", productoBD);
+        this.mensajes.agregar("producto", this.productoServicio.findOneByCodigoBarra(codigoBarra));
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
@@ -133,11 +108,9 @@ public class ProductoControlador {
     public ResponseEntity<?> guardar(@Valid @RequestBody Producto producto , BindingResult bindingResult)
             throws NoEstaVerificado, NoEstaHabilitado, BindException {
 
-        //Atributos
-        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
-
         //Validar estado y verificacion
         this.usuarioAutenticado.autenticarUsuario();
+        this.usuarioAutenticado.verificarUsuario();
 
         if(bindingResult.hasErrors()){
             throw  new BindException(bindingResult);
@@ -146,13 +119,10 @@ public class ProductoControlador {
         //Establecer código interno
         producto.setCodigoInterno(this.hora.codigoInterno(producto.getCategoria().getNombre().substring(0, 3)));
 
-        //persistencia
-        producto = this.productoServicio.save(producto);
-
         //mensajes de exito
         this.mensajes.limpiar();
         this.mensajes.agregar("exito", "Se agrego el producto correctamente.");
-        this.mensajes.agregar("producto", producto);
+        this.mensajes.agregar("producto", this.productoServicio.save(producto));
         return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 
@@ -162,19 +132,16 @@ public class ProductoControlador {
                                     @PathVariable Long id)
             throws NoEstaVerificado, NoEstaHabilitado, BindException {
 
-        //Atributos
-        Producto productoBD;
-        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
-
         //Validar estado y verificacion
         this.usuarioAutenticado.autenticarUsuario();
+        this.usuarioAutenticado.verificarUsuario();
+
+        //Atributos
+        Producto productoBD;
 
         if(bindingResult.hasErrors()){
             throw  new BindException(bindingResult);
         }
-
-        //Establecer código interno
-        producto.setCodigoInterno(this.hora.codigoInterno(producto.getCategoria().getNombre().substring(0, 3)));
 
         //Buscar producto en la base de datos
         productoBD = this.productoServicio.findById(id);
@@ -184,18 +151,36 @@ public class ProductoControlador {
         productoBD.setDescripcion(producto.getDescripcion());
         productoBD.setPrecio(producto.getPrecio());
         productoBD.setStock(producto.getStock());
-        productoBD.setCategoria(producto.getCategoria());
         productoBD.setCodigoBarra(producto.getCodigoBarra());
         productoBD.setCodigoInterno(producto.getCodigoInterno());
         productoBD.setUpdateAt(new Date());
 
-        //persistencia
-        productoBD = this.productoServicio.save(productoBD);
-
         //mensajes de exito
         this.mensajes.limpiar();
         this.mensajes.agregar("exito", "Se actualizo el producto correctamente.");
-        this.mensajes.agregar("producto", productoBD);
+        this.mensajes.agregar("producto", this.productoServicio.save(productoBD));
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
+    }
+
+    @PutMapping("/productos/cambiar-categoria/{id-producto}/{id-categoria}")
+    @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
+    public ResponseEntity<?> editarProductoCategoria(@PathVariable(value = "id-producto") Long idProducto,
+                                                     @PathVariable(value = "id-categoria") Long idCategoria){
+
+        //Atributos
+        Producto productoBD;
+        Categoria categoriaBD;
+
+        //Buscamos el producto y categoria en la base de datos
+        productoBD = this.productoServicio.findById(idProducto);
+        categoriaBD = this.categoriaServicio.findById(idCategoria);
+
+        //Cambiamos la categoria
+        productoBD.setCategoria(categoriaBD);
+
+        //mensajes
+        this.mensajes.agregar("exito", "se actualizo la categoria del producto");
+        this.mensajes.agregar("producto", this.productoServicio.save(productoBD));
         return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 

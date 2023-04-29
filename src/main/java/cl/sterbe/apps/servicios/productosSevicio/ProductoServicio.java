@@ -1,12 +1,13 @@
 package cl.sterbe.apps.servicios.productosSevicio;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorListaVacia;
 import cl.sterbe.apps.modelos.DTO.productos.Producto;
 
 import java.util.List;
 
 public interface ProductoServicio {
 
-    List<Producto> findAll();
+    List<Producto> findAll() throws ErrorListaVacia;
 
     Producto findById(Long id);
 

@@ -1,15 +1,11 @@
 package cl.sterbe.apps.controladores;
 
-import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorEditarRecurso;
-import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorRun;
-import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaHabilitado;
-import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaVerificado;
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.*;
 import cl.sterbe.apps.componentes.Mensaje;
 import cl.sterbe.apps.componentes.UsuarioAutenticado;
 import cl.sterbe.apps.componentes.ValidarRun;
 import cl.sterbe.apps.modelos.DTO.usuarios.Direccion;
 import cl.sterbe.apps.modelos.DTO.usuarios.Perfil;
-import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
 import cl.sterbe.apps.servicios.usuariosServicio.DireccionServicio;
 import cl.sterbe.apps.servicios.usuariosServicio.PerfilServicio;
 import cl.sterbe.apps.servicios.usuariosServicio.UsuarioServicio;
@@ -48,25 +44,12 @@ public class PerfilControlador {
 
     @GetMapping("perfiles")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> buscarPerfiles(){
-
-        //Atributos
-        List<Perfil> perfiles = this.perfilServicio.findAll();
-
-        //Limpiamos los mensajes
-        this.mensajes.limpiar();
-
-        //Validar si la lista viene vacia de la base de datos
-        if(perfiles.isEmpty()){
-            this.mensajes.agregar("error", "No existen perfiles.");
-            this.mensajes.agregar("perfiles", perfiles);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(this.mensajes.mostrarMensajes());
-        }
+    public ResponseEntity<?> buscarPerfiles() throws ErrorListaVacia {
 
         //Enviar mensaje de exito y los perfiles
-        perfiles.forEach(p -> p.getUsuario().setContrasena(""));
+        this.mensajes.limpiar();
         this.mensajes.agregar("exito", "Se han encontrado los perfiles.");
-        this.mensajes.agregar("perfiles", perfiles);
+        this.mensajes.agregar("perfiles", this.perfilServicio.findAll());
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
@@ -74,12 +57,12 @@ public class PerfilControlador {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> buscarPerfil(@PathVariable Long id) throws NoEstaVerificado, NoEstaHabilitado {
 
-        //Atributos
-        Perfil perfil;
-        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
-
         //Validar si estas habilitado y verificado
         this.usuarioAutenticado.autenticarUsuario();
+        this.usuarioAutenticado.verificarUsuario();
+
+        //Atributos
+        Perfil perfil;
 
         //Buscamos el perfil en la base de datos
         perfil = this.perfilServicio.findById(id);
@@ -88,15 +71,14 @@ public class PerfilControlador {
         this.mensajes.limpiar();
 
         //Validamos al usuario
-        if(!usuarioAuthenticado.getRol().getRol().equals("ROLE_ADMINISTRADOR")){
-            if(!perfil.getUsuario().getId().equals(usuarioAuthenticado.getId())){
+        if(!this.usuarioAutenticado.getUsuarioAutenticado().getRol().getRol().equals("ROLE_ADMINISTRADOR")){
+            if(!perfil.getUsuario().getId().equals(this.usuarioAutenticado.getUsuarioAutenticado().getId())){
                 this.mensajes.agregar("denegado", "No tienes acceso al recurso solicitado");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.mensajes.mostrarMensajes());
             }
         }
 
         //enviar los mensajes de exito y el perfil
-        perfil.getUsuario().setContrasena("");
         this.mensajes.agregar("exito", "Se ha encontro con exito el perfil.");
         this.mensajes.agregar("perfil", perfil);
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
@@ -107,11 +89,9 @@ public class PerfilControlador {
     public ResponseEntity<?> guardarPerfil(@Valid @RequestBody Perfil perfil, BindingResult bindingResult)
             throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorRun, ErrorEditarRecurso {
 
-        //Atributos
-        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
-
         //Validar si estas habilitado y verificado
         this.usuarioAutenticado.autenticarUsuario();
+        this.usuarioAutenticado.verificarUsuario();
 
         //Validamos los campos vacios o nulos
         if(bindingResult.hasErrors()){
@@ -122,10 +102,10 @@ public class PerfilControlador {
         this.validarRun.validarRun(perfil.getRun());
 
         //Validamos si el usuario ya tienen un perfil
-        this.perfilServicio.findOneByUsuario(usuarioAuthenticado);
+        this.perfilServicio.findOneByUsuario(this.usuarioAutenticado.getUsuarioAutenticado());
 
         //Agregamos el usuario correspondiente al perfil
-        perfil.setUsuario(usuarioAuthenticado);
+        perfil.setUsuario(this.usuarioAutenticado.getUsuarioAutenticado());
         perfil.setDirecciones(Arrays.asList());
 
         //Agregamos el perfil a la base de datos
@@ -145,12 +125,12 @@ public class PerfilControlador {
                                           @PathVariable Long id)
             throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorRun, ErrorEditarRecurso {
 
-        //Atributos
-        Perfil perfilBD;
-        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
-
         //Validar si estas habilitado yverificado
         this.usuarioAutenticado.autenticarUsuario();
+        this.usuarioAutenticado.verificarUsuario();
+
+        //Atributos
+        Perfil perfilBD;
 
         //Validamos los campos vacios o nulos
         if(bindingResult.hasErrors()){
@@ -191,12 +171,12 @@ public class PerfilControlador {
                                                 @PathVariable(value = "perfil_id") Long id)
             throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorEditarRecurso {
 
-        //Atributos
-        Perfil perfilBD;
-        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
-
         //Validar si estas habilitado y verificacion
         this.usuarioAutenticado.autenticarUsuario();
+        this.usuarioAutenticado.verificarUsuario();
+
+        //Atributos
+        Perfil perfilBD;
 
         //Validamos los campos vacios o nulos
         if(bindingResult.hasErrors()){
@@ -242,16 +222,16 @@ public class PerfilControlador {
                                              @PathVariable(value = "direccion_id") Long direccionId)
             throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorEditarRecurso {
 
+        //Validar si estas habilitado y verificacion
+        this.usuarioAutenticado.autenticarUsuario();
+        this.usuarioAutenticado.verificarUsuario();
+
         //Atributos
         Perfil perfilBD;
         boolean direccionEncontrada = false;
-        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Limpiar mensajes
         this.mensajes.limpiar();
-
-        //Validar si estas habilitado y verificacion
-        this.usuarioAutenticado.autenticarUsuario();
 
         //Validamos que los parametros recibidos sean mayores que 0
         if(direccionId <= 0) {
@@ -308,16 +288,16 @@ public class PerfilControlador {
                                                @PathVariable(value = "direccion_id") Long direccionId)
             throws NoEstaVerificado, NoEstaHabilitado, ErrorEditarRecurso {
 
+        //Validar si estas habilitado y verificacion
+        this.usuarioAutenticado.autenticarUsuario();
+        this.usuarioAutenticado.verificarUsuario();
+
         //Atributos
         Perfil perfilBD;
         boolean direccionEncontrada = false;
-        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Limpiar mensajes
         this.mensajes.limpiar();
-
-        //Validar si estas habilitado y verificacion
-        this.usuarioAutenticado.autenticarUsuario();
 
         //Validamos que los parametros recibidos sean mayores que 0
         if(direccionId <= 0) {
@@ -363,16 +343,16 @@ public class PerfilControlador {
                                                       @PathVariable(value = "direccion_id") Long direccionId)
             throws NoEstaVerificado, NoEstaHabilitado, ErrorEditarRecurso {
 
+        //Validar si estas habilitado y verificacion
+        this.usuarioAutenticado.autenticarUsuario();
+        this.usuarioAutenticado.verificarUsuario();
+
         //Atributos
         Perfil perfilBD;
         boolean direccionEncontrada = false;
-        Usuario usuarioAuthenticado = this.usuarioAutenticado.getUsuarioAutenticado();
 
         //Limpiar mensajes
         this.mensajes.limpiar();
-
-        //Validar si estas habilitado y verificacion
-        this.usuarioAutenticado.autenticarUsuario();
 
         //Validamos los parametros
         if(direccionId <= 0){

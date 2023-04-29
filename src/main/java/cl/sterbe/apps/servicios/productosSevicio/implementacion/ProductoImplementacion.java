@@ -1,5 +1,6 @@
 package cl.sterbe.apps.servicios.productosSevicio.implementacion;
 
+import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorListaVacia;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoSeEncontroPojo;
 import cl.sterbe.apps.modelos.DAO.productosDAO.ProductoDAO;
 import cl.sterbe.apps.modelos.DTO.productos.Producto;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductoImplementacion implements ProductoServicio {
@@ -18,14 +20,17 @@ public class ProductoImplementacion implements ProductoServicio {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Producto> findAll() {
-        return (List<Producto>) this.productoDAO.findAll();
+    public List<Producto> findAll() throws ErrorListaVacia {
+        return Optional.of((List<Producto>) this.productoDAO.findAll())
+                .filter(p -> !p.isEmpty())
+                .orElseThrow(() -> new ErrorListaVacia("productos"));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Producto findById(Long id) {
-        return this.productoDAO.findById(id).orElseThrow(() -> new NoSeEncontroPojo("producto"));
+        return this.productoDAO.findById(id)
+                .orElseThrow(() -> new NoSeEncontroPojo("producto"));
     }
 
     @Override
@@ -46,11 +51,13 @@ public class ProductoImplementacion implements ProductoServicio {
     @Override
     @Transactional(readOnly = true)
     public Producto findOneByCodigoInterno(String codigoInterno) {
-        return this.productoDAO.findOneByCodigoInterno(codigoInterno).orElseThrow(() -> new NoSeEncontroPojo("producto"));
+        return this.productoDAO.findOneByCodigoInterno(codigoInterno)
+                .orElseThrow(() -> new NoSeEncontroPojo("producto"));
     }
 
     @Override
     public Producto findOneByCodigoBarra(String codigoBarra) {
-        return this.productoDAO.findOneByCodigoBarra(codigoBarra).orElseThrow(() -> new NoSeEncontroPojo("producto"));
+        return this.productoDAO.findOneByCodigoBarra(codigoBarra)
+                .orElseThrow(() -> new NoSeEncontroPojo("producto"));
     }
 }
