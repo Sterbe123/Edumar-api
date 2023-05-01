@@ -20,6 +20,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/")
@@ -42,7 +43,7 @@ public class UsuarioControlador {
 
     @GetMapping("usuarios")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> buscarUsuarios() throws ErrorListaVacia {
+    public ResponseEntity<Map<String, Object>> buscarUsuarios() throws ErrorListaVacia {
 
         //Mandar los mensajes de exito
         this.mensajes.limpiar();
@@ -53,7 +54,7 @@ public class UsuarioControlador {
 
     @GetMapping("usuarios/{id}")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> buscarUsuario(@PathVariable Long id){
+    public ResponseEntity<Map<String, Object>> buscarUsuario(@PathVariable Long id){
 
         //Mandar mensajes de exito
         this.mensajes.limpiar();
@@ -64,7 +65,7 @@ public class UsuarioControlador {
 
     @PutMapping("usuarios/editar-contrasena")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> editarContrasena(@Valid @RequestBody Usuario usuario, BindingResult bindingResult)
+    public ResponseEntity<Map<String, Object>> editarContrasena(@Valid @RequestBody Usuario usuario, BindingResult bindingResult)
             throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorContrasena {
 
         //Validar si estas habilitado y verificado
@@ -104,7 +105,7 @@ public class UsuarioControlador {
 
     @PatchMapping("usuarios/deshabilitar/{id}")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> deshabilitarUsuario(@PathVariable Long id){
+    public ResponseEntity<Map<String, Object>> deshabilitarUsuario(@PathVariable Long id){
 
         //Atributo
         Usuario usuarioBD;
@@ -141,7 +142,7 @@ public class UsuarioControlador {
 
     @PatchMapping("usuarios/habilitar/{id}")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> habilitarUsuario(@PathVariable Long id){
+    public ResponseEntity<Map<String, Object>> habilitarUsuario(@PathVariable Long id){
 
         //Atributo
         Usuario usuarioBD;

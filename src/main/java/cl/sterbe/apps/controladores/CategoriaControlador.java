@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -35,7 +36,8 @@ public class CategoriaControlador {
 
     @GetMapping("/categorias")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> listarCategorias() throws NoEstaVerificado, NoEstaHabilitado, ErrorListaVacia {
+    public ResponseEntity<Map<String, Object>> listarCategorias()
+            throws NoEstaVerificado, NoEstaHabilitado, ErrorListaVacia {
 
         //Validamos usuario estado y verificacion
         this.usuarioAutenticado.autenticarUsuario();
@@ -54,7 +56,8 @@ public class CategoriaControlador {
 
     @GetMapping("/categorias/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> mostrarCategoria(@PathVariable Long id) throws NoEstaVerificado, NoEstaHabilitado {
+    public ResponseEntity<Map<String, Object>> mostrarCategoria(@PathVariable Long id)
+            throws NoEstaVerificado, NoEstaHabilitado {
 
         //Validamos usuario estado y verificacion
         this.usuarioAutenticado.autenticarUsuario();
@@ -75,7 +78,7 @@ public class CategoriaControlador {
 
     @PostMapping("/categorias")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> guardarCategoria(@Valid @RequestBody Categoria categoria, BindingResult result)
+    public ResponseEntity<Map<String, Object>> guardarCategoria(@Valid @RequestBody Categoria categoria, BindingResult result)
             throws BindException {
 
         //Validar campos de la categoria
@@ -95,7 +98,7 @@ public class CategoriaControlador {
 
     @PutMapping("/categorias/{id}")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> editarCategoria(@Valid @RequestBody Categoria categoria, BindingResult result,
+    public ResponseEntity<Map<String, Object>> editarCategoria(@Valid @RequestBody Categoria categoria, BindingResult result,
                                              @PathVariable Long id)
             throws BindException {
 
@@ -126,7 +129,7 @@ public class CategoriaControlador {
 
     @PatchMapping("/categorias/deshabilitar/{id}")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> deshabilitarCategoria(@PathVariable Long id){
+    public ResponseEntity<Map<String, Object>> deshabilitarCategoria(@PathVariable Long id){
 
         //Atributos
         Categoria categoriaBD;
@@ -155,7 +158,7 @@ public class CategoriaControlador {
 
     @PatchMapping("/categorias/habilitar/{id}")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> habilitarCategoria(@PathVariable Long id){
+    public ResponseEntity<Map<String, Object>> habilitarCategoria(@PathVariable Long id){
 
         //Atributos
         Categoria categoriaBD;

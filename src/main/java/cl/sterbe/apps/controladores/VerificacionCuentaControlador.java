@@ -7,7 +7,6 @@ import cl.sterbe.apps.modelos.DTO.usuarios.Usuario;
 import cl.sterbe.apps.servicios.usuariosServicio.UsuarioServicio;
 import cl.sterbe.apps.security.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.mail.SendFailedException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -33,7 +31,7 @@ public class VerificacionCuentaControlador {
     private Mensaje mensajes;
 
     @GetMapping("/verificacion-cuenta/{token}")
-    public ResponseEntity<?> verificarCuenta(@PathVariable String token){
+    public ResponseEntity<Map<String, Object>> verificarCuenta(@PathVariable String token){
 
         //Atributos
         Usuario usuario;
@@ -91,7 +89,7 @@ public class VerificacionCuentaControlador {
     }
 
     @GetMapping("/re-enviar-verificacion/{email}")
-    public ResponseEntity<?> reEnviarToken(@PathVariable String email){
+    public ResponseEntity<Map<String, Object>> reEnviarToken(@PathVariable String email){
 
         //Atributos
         String token;

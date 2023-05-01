@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.mail.SendFailedException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -50,8 +51,8 @@ public class LoginControlador {
     private Mensaje mensajes;
 
     @PostMapping("/registro/{rol}")
-    public ResponseEntity<?> registro(@Valid @RequestBody Usuario usuario, BindingResult bindingResult,
-                                      @PathVariable(value = "rol") Long id)
+    public ResponseEntity<Map<String, Object>> registro(@Valid @RequestBody Usuario usuario, BindingResult bindingResult,
+                                        @PathVariable(value = "rol") Long id)
             throws BindException, ErrorContrasena {
 
         //Atributos

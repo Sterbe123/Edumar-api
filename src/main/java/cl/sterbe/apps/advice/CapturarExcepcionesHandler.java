@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -23,7 +24,7 @@ public class CapturarExcepcionesHandler {
     private Mensaje mensajes;
 
     @ExceptionHandler(DataAccessException.class)
-    public ResponseEntity<?> handleDataAccessException(DataAccessException ex) {
+    public ResponseEntity<Map<String, Object>> handleDataAccessException(DataAccessException ex) {
 
         //Limpiar mensajes
         this.mensajes.limpiar();
@@ -34,7 +35,7 @@ public class CapturarExcepcionesHandler {
     }
 
     @ExceptionHandler(BindException.class)
-    public ResponseEntity<?> capturarBindResult(BindException ex) {
+    public ResponseEntity<Map<String, Object>> capturarBindResult(BindException ex) {
 
         //Limpiar mensajes
         this.mensajes.limpiar();
@@ -51,7 +52,7 @@ public class CapturarExcepcionesHandler {
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<?> manejarExcepcionDeIntegridad(DataIntegrityViolationException e) {
+    public ResponseEntity<Map<String, Object>> manejarExcepcionDeIntegridad(DataIntegrityViolationException e) {
 
         //Limpiar mensajes
         this.mensajes.limpiar();
@@ -62,7 +63,7 @@ public class CapturarExcepcionesHandler {
     }
 
     @ExceptionHandler(NoEstaHabilitado.class)
-    public ResponseEntity<?> noEstaHabilitado(NoEstaHabilitado e){
+    public ResponseEntity<Map<String, Object>> noEstaHabilitado(NoEstaHabilitado e){
 
         //Limpiar mensaes
         this.mensajes.limpiar();
@@ -73,7 +74,7 @@ public class CapturarExcepcionesHandler {
     }
 
     @ExceptionHandler(NoEstaVerificado.class)
-    public ResponseEntity<?> noEstaVerificado(NoEstaVerificado e){
+    public ResponseEntity<Map<String, Object>> noEstaVerificado(NoEstaVerificado e){
 
         //Limpiar mensajes
         this.mensajes.limpiar();
@@ -84,7 +85,7 @@ public class CapturarExcepcionesHandler {
     }
 
     @ExceptionHandler(NoSeEncontroPojo.class)
-    public ResponseEntity<?> pojoNull(NoSeEncontroPojo e){
+    public ResponseEntity<Map<String, Object>> pojoNull(NoSeEncontroPojo e){
 
         //Limpiar mensajes
         this.mensajes.limpiar();
@@ -95,7 +96,7 @@ public class CapturarExcepcionesHandler {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<?> parametroInvalido(MethodArgumentTypeMismatchException e){
+    public ResponseEntity<Map<String, Object>> parametroInvalido(MethodArgumentTypeMismatchException e){
         //Limpiar mensajes
         this.mensajes.limpiar();
 
@@ -105,7 +106,7 @@ public class CapturarExcepcionesHandler {
     }
 
     @ExceptionHandler(ErrorContrasena.class)
-    public ResponseEntity<?> errorContrasena(ErrorContrasena e){
+    public ResponseEntity<Map<String, Object>> errorContrasena(ErrorContrasena e){
         //Limpiar mensajes
         this.mensajes.limpiar();
 
@@ -115,7 +116,7 @@ public class CapturarExcepcionesHandler {
     }
 
     @ExceptionHandler(ErrorRun.class)
-    public ResponseEntity<?> errorRun(ErrorRun e){
+    public ResponseEntity<Map<String, Object>> errorRun(ErrorRun e){
         //Limpiar mensajes
         this.mensajes.limpiar();
 
@@ -124,7 +125,7 @@ public class CapturarExcepcionesHandler {
     }
 
     @ExceptionHandler(ErrorPerfilRegistrado.class)
-    public ResponseEntity<?> errorPerfilRegistrado(ErrorPerfilRegistrado e){
+    public ResponseEntity<Map<String, Object>> errorPerfilRegistrado(ErrorPerfilRegistrado e){
         //Limpiar mensajes
         this.mensajes.limpiar();
 
@@ -133,7 +134,7 @@ public class CapturarExcepcionesHandler {
     }
 
     @ExceptionHandler(ErrorEditarRecurso.class)
-    public ResponseEntity<?> errorEditarRecursos(ErrorEditarRecurso e){
+    public ResponseEntity<Map<String, Object>> errorEditarRecursos(ErrorEditarRecurso e){
         //Limpiar mensajes
         this.mensajes.limpiar();
 
@@ -142,7 +143,7 @@ public class CapturarExcepcionesHandler {
     }
 
     @ExceptionHandler(InternalAuthenticationServiceException.class)
-    public ResponseEntity<?> errorAutenticar(InternalAuthenticationServiceException e){
+    public ResponseEntity<Map<String, Object>> errorAutenticar(InternalAuthenticationServiceException e){
         //Limpiar mensajes
         this.mensajes.limpiar();
 
@@ -151,7 +152,7 @@ public class CapturarExcepcionesHandler {
     }
 
     @ExceptionHandler(ErrorListaVacia.class)
-    public ResponseEntity<?> errorListaVacia(ErrorListaVacia e){
+    public ResponseEntity<Map<String, Object>> errorListaVacia(ErrorListaVacia e){
         //Limpiar mensajes
         this.mensajes.limpiar();
 

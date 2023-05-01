@@ -44,7 +44,7 @@ public class PerfilControlador {
 
     @GetMapping("perfiles")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> buscarPerfiles() throws ErrorListaVacia {
+    public ResponseEntity<Map<String, Object>> buscarPerfiles() throws ErrorListaVacia {
 
         //Enviar mensaje de exito y los perfiles
         this.mensajes.limpiar();
@@ -55,7 +55,7 @@ public class PerfilControlador {
 
     @GetMapping("perfiles/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> buscarPerfil(@PathVariable Long id) throws NoEstaVerificado, NoEstaHabilitado {
+    public ResponseEntity<Map<String, Object>> buscarPerfil(@PathVariable Long id) throws NoEstaVerificado, NoEstaHabilitado {
 
         //Validar si estas habilitado y verificado
         this.usuarioAutenticado.autenticarUsuario();
@@ -86,7 +86,7 @@ public class PerfilControlador {
 
     @PostMapping("perfiles")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> guardarPerfil(@Valid @RequestBody Perfil perfil, BindingResult bindingResult)
+    public ResponseEntity<Map<String, Object>> guardarPerfil(@Valid @RequestBody Perfil perfil, BindingResult bindingResult)
             throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorRun, ErrorEditarRecurso {
 
         //Validar si estas habilitado y verificado
@@ -121,7 +121,7 @@ public class PerfilControlador {
 
     @PutMapping("perfiles/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> editarPerfil(@Valid @RequestBody Perfil perfil, BindingResult bindingResult,
+    public ResponseEntity<Map<String, Object>> editarPerfil(@Valid @RequestBody Perfil perfil, BindingResult bindingResult,
                                           @PathVariable Long id)
             throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorRun, ErrorEditarRecurso {
 
@@ -167,7 +167,7 @@ public class PerfilControlador {
 
     @PostMapping("perfiles/direcciones/{perfil_id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> agregarDireccion(@Valid @RequestBody Direccion direccion, BindingResult bindingResult,
+    public ResponseEntity<Map<String, Object>> agregarDireccion(@Valid @RequestBody Direccion direccion, BindingResult bindingResult,
                                                 @PathVariable(value = "perfil_id") Long id)
             throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorEditarRecurso {
 
@@ -217,7 +217,7 @@ public class PerfilControlador {
 
     @PutMapping("perfiles/direcciones/{perfil_id}/{direccion_id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> editarDireccion(@Valid @RequestBody Direccion direccion, BindingResult bindingResult,
+    public ResponseEntity<Map<String, Object>> editarDireccion(@Valid @RequestBody Direccion direccion, BindingResult bindingResult,
                                              @PathVariable(value = "perfil_id") Long perfilId,
                                              @PathVariable(value = "direccion_id") Long direccionId)
             throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorEditarRecurso {
@@ -284,7 +284,7 @@ public class PerfilControlador {
 
     @DeleteMapping("perfiles/direcciones/{perfil_id}/{direccion_id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> eliminarDireccion(@PathVariable(value = "perfil_id") Long perfilId,
+    public ResponseEntity<Map<String, Object>> eliminarDireccion(@PathVariable(value = "perfil_id") Long perfilId,
                                                @PathVariable(value = "direccion_id") Long direccionId)
             throws NoEstaVerificado, NoEstaHabilitado, ErrorEditarRecurso {
 
@@ -339,7 +339,7 @@ public class PerfilControlador {
 
     @PatchMapping("perfiles/direcciones/{perfil_id}/{direccion_id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> editarDireccionPrincipal(@PathVariable(value = "perfil_id") Long perfilId,
+    public ResponseEntity<Map<String, Object>> editarDireccionPrincipal(@PathVariable(value = "perfil_id") Long perfilId,
                                                       @PathVariable(value = "direccion_id") Long direccionId)
             throws NoEstaVerificado, NoEstaHabilitado, ErrorEditarRecurso {
 

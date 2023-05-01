@@ -20,6 +20,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -42,7 +43,7 @@ public class ProductoControlador {
 
     @GetMapping("/productos")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> productos() throws NoEstaVerificado, NoEstaHabilitado, ErrorListaVacia {
+    public ResponseEntity<Map<String, Object>> productos() throws NoEstaVerificado, NoEstaHabilitado, ErrorListaVacia {
 
         //Validar estado del usuario y verificaicon
         this.usuarioAutenticado.autenticarUsuario();
@@ -57,7 +58,7 @@ public class ProductoControlador {
 
     @GetMapping("/productos/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> producto(@PathVariable Long id)
+    public ResponseEntity<Map<String, Object>> producto(@PathVariable Long id)
             throws NoEstaVerificado, NoEstaHabilitado {
 
         //Validar estado del usuario y verificaion
@@ -73,7 +74,7 @@ public class ProductoControlador {
 
     @GetMapping("/productos/codigo-interno/{codigoInterno}")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR') OR hasRole('ROLE_TRABAJADOR')")
-    public ResponseEntity<?> buscarPorCodigointerno(@PathVariable String codigoInterno)
+    public ResponseEntity<Map<String, Object>> buscarPorCodigointerno(@PathVariable String codigoInterno)
             throws NoEstaVerificado, NoEstaHabilitado {
 
         //Validar estado y verificion
@@ -89,7 +90,7 @@ public class ProductoControlador {
 
     @GetMapping("/productos/codigo-barra/{codigoBarra}")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR') OR hasRole('ROLE_TRABAJADOR')")
-    public ResponseEntity<?> buscarPorCodigoBarra(@PathVariable String codigoBarra)
+    public ResponseEntity<Map<String, Object>> buscarPorCodigoBarra(@PathVariable String codigoBarra)
             throws NoEstaVerificado, NoEstaHabilitado {
 
         //Validar estado y verificion
@@ -105,7 +106,7 @@ public class ProductoControlador {
 
     @PostMapping("/productos")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR') OR hasRole('ROLE_TRABAJADOR')")
-    public ResponseEntity<?> guardar(@Valid @RequestBody Producto producto , BindingResult bindingResult)
+    public ResponseEntity<Map<String, Object>> guardar(@Valid @RequestBody Producto producto , BindingResult bindingResult)
             throws NoEstaVerificado, NoEstaHabilitado, BindException {
 
         //Validar estado y verificacion
@@ -128,7 +129,7 @@ public class ProductoControlador {
 
     @PutMapping("/productos/{id}")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR') OR hasRole('ROLE_TRABAJADOR')")
-    public ResponseEntity<?> editar(@Valid @RequestBody Producto producto , BindingResult bindingResult,
+    public ResponseEntity<Map<String, Object>> editar(@Valid @RequestBody Producto producto , BindingResult bindingResult,
                                     @PathVariable Long id)
             throws NoEstaVerificado, NoEstaHabilitado, BindException {
 
@@ -164,7 +165,7 @@ public class ProductoControlador {
 
     @PutMapping("/productos/cambiar-categoria/{id-producto}/{id-categoria}")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> editarProductoCategoria(@PathVariable(value = "id-producto") Long idProducto,
+    public ResponseEntity<Map<String, Object>> editarProductoCategoria(@PathVariable(value = "id-producto") Long idProducto,
                                                      @PathVariable(value = "id-categoria") Long idCategoria){
 
         //Atributos
@@ -186,7 +187,7 @@ public class ProductoControlador {
 
     @DeleteMapping("/productos/{id}")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
-    public ResponseEntity<?> eliminar(@PathVariable Long id){
+    public ResponseEntity<Map<String, Object>> eliminar(@PathVariable Long id){
 
         //Atributos
         Producto productoBD;
