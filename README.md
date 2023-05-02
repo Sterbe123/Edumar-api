@@ -6,8 +6,9 @@ Este es un proyecto de aprendizaje en construcción que utiliza Spring Boot para
 
 Antes de comenzar, es necesario tener instalado lo siguiente:
 
-**Java 17**
-**Maven**
+**- Java 17**
+
+**- Maven**
 
 ## **Ejecución del proyecto**
 
