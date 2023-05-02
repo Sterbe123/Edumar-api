@@ -24,8 +24,6 @@ Antes de comenzar, es necesario tener instalado lo siguiente:
 
 La API REST ya cuenta con algunos endpoints implementados. Aquí se muestra una lista de ellos:
 
-### **Obtener todos los usuarios**
-
 Algunos de los endpoints
 GET/api/perfiles  (Obtienes todos los perfiles)
 
