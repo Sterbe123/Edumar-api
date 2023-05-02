@@ -2,8 +2,6 @@ package cl.sterbe.apps.controladores;
 
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorContrasena;
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorListaVacia;
-import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaHabilitado;
-import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaVerificado;
 import cl.sterbe.apps.componentes.Mensaje;
 import cl.sterbe.apps.componentes.UsuarioAutenticado;
 import cl.sterbe.apps.componentes.ValidarContrasena;
@@ -66,11 +64,7 @@ public class UsuarioControlador {
     @PutMapping("usuarios/editar-contrasena")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> editarContrasena(@Valid @RequestBody Usuario usuario, BindingResult bindingResult)
-            throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorContrasena {
-
-        //Validar si estas habilitado y verificado
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
+            throws BindException, ErrorContrasena {
 
         //Validar campos
         if(bindingResult.hasErrors()){
@@ -107,11 +101,8 @@ public class UsuarioControlador {
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
     public ResponseEntity<Map<String, Object>> deshabilitarUsuario(@PathVariable Long id){
 
-        //Atributo
-        Usuario usuarioBD;
-
         //Buscamos el usuario en la base de dato
-        usuarioBD = this.usuarioServicio.findById(id);
+        Usuario usuarioBD = this.usuarioServicio.findById(id);
 
         //Limpiamos los mensajes
         this.mensajes.limpiar();
@@ -145,13 +136,10 @@ public class UsuarioControlador {
     public ResponseEntity<Map<String, Object>> habilitarUsuario(@PathVariable Long id){
 
         //Atributo
-        Usuario usuarioBD;
+        Usuario usuarioBD = this.usuarioServicio.findById(id);
 
         //Limpiar los mensajes
         this.mensajes.limpiar();
-
-        //Buscamos el usuario en la base de datoa
-        usuarioBD = this.usuarioServicio.findById(id);
 
         //Validamos que el usuario a deshabilitar no sea un administrador
         if(usuarioBD.getRol().getRol().equals("ROLE_ADMINISTRADOR")){

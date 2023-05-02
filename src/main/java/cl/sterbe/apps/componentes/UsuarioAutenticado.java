@@ -26,6 +26,7 @@ public class UsuarioAutenticado {
      * @return Usuario
      */
     public Usuario getUsuarioAutenticado(){
+        this.autenticarUsuario();
         return this.usuario;
     }
 
@@ -46,6 +47,7 @@ public class UsuarioAutenticado {
     }
 
     public void autenticarEditarRecurso(Long id) throws ErrorEditarRecurso {
+        this.autenticarUsuario();
         if(!this.usuario.getId().equals(id)){
             throw new ErrorEditarRecurso();
         }

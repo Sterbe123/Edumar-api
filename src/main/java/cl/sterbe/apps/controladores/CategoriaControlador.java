@@ -1,8 +1,6 @@
 package cl.sterbe.apps.controladores;
 
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorListaVacia;
-import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaHabilitado;
-import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaVerificado;
 import cl.sterbe.apps.componentes.Mensaje;
 import cl.sterbe.apps.componentes.UsuarioAutenticado;
 import cl.sterbe.apps.modelos.DTO.productos.Categoria;
@@ -37,11 +35,7 @@ public class CategoriaControlador {
     @GetMapping("/categorias")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> listarCategorias()
-            throws NoEstaVerificado, NoEstaHabilitado, ErrorListaVacia {
-
-        //Validamos usuario estado y verificacion
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
+            throws ErrorListaVacia {
 
         //Atributos
         List<Categoria> categorias = this.categoriaServicio.findAll();
@@ -56,23 +50,12 @@ public class CategoriaControlador {
 
     @GetMapping("/categorias/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, Object>> mostrarCategoria(@PathVariable Long id)
-            throws NoEstaVerificado, NoEstaHabilitado {
-
-        //Validamos usuario estado y verificacion
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
-
-        //Atributos
-        Categoria categoria;
-
-        //Buscamos la categoria
-        categoria = this.categoriaServicio.findById(id);
+    public ResponseEntity<Map<String, Object>> mostrarCategoria(@PathVariable Long id){
 
         //mensaje de exito
         this.mensajes.limpiar();
         this.mensajes.agregar("exito", "Se encontro la categoria");
-        this.mensajes.agregar("categoria", categoria);
+        this.mensajes.agregar("categoria", this.categoriaServicio.findById(id));
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
@@ -86,13 +69,10 @@ public class CategoriaControlador {
             throw new BindException(result);
         }
 
-        //Realizar la persistencia
-        categoria = this.categoriaServicio.save(categoria);
-
         //Mensajes de exito
         this.mensajes.limpiar();
         this.mensajes.agregar("exito","Se guardo correctamente la categoria.");
-        this.mensajes.agregar("categoria", categoria);
+        this.mensajes.agregar("categoria", this.categoriaServicio.save(categoria));
         return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 
@@ -102,28 +82,22 @@ public class CategoriaControlador {
                                              @PathVariable Long id)
             throws BindException {
 
-        //Atributos
-        Categoria categoriaBD;
+        //Buscamos la categoria en la base de datos
+        Categoria categoriaBD = this.categoriaServicio.findById(id);
 
         //Validar campos
         if (result.hasErrors()){
             throw  new BindException(result);
         }
 
-        //Buscamos la categoria en la base de datos
-        categoriaBD = this.categoriaServicio.findById(id);
-
         //Actualizamos los datos
         categoriaBD.setNombre(categoria.getNombre());
         categoriaBD.setUpdateAt(new Date());
 
-        //Hacemos la persistencia
-        categoriaBD = this.categoriaServicio.save(categoriaBD);
-
         //Mensajes de exito
         this.mensajes.limpiar();
         this.mensajes.agregar("exito","Se guardo correctamente la categoria.");
-        this.mensajes.agregar("categoria", categoria);
+        this.mensajes.agregar("categoria", this.categoriaServicio.save(categoriaBD));
         return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 
@@ -131,11 +105,8 @@ public class CategoriaControlador {
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
     public ResponseEntity<Map<String, Object>> deshabilitarCategoria(@PathVariable Long id){
 
-        //Atributos
-        Categoria categoriaBD;
-
         //Buscamos la categoria en la base de datos
-        categoriaBD = this.categoriaServicio.findById(id);
+        Categoria categoriaBD = this.categoriaServicio.findById(id);
 
         //Limpiamos los mensajes
         this.mensajes.limpiar();
@@ -148,11 +119,10 @@ public class CategoriaControlador {
 
         //actualizamos la categoria
         categoriaBD.setEstado(false);
-        categoriaBD = this.categoriaServicio.save(categoriaBD);
 
         //Mensajes de exito
         this.mensajes.agregar("exito", "Se deshabilito con extio la categoria.");
-        this.mensajes.agregar("categoria", categoriaBD);
+        this.mensajes.agregar("categoria", this.categoriaServicio.save(categoriaBD));
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
@@ -160,11 +130,8 @@ public class CategoriaControlador {
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
     public ResponseEntity<Map<String, Object>> habilitarCategoria(@PathVariable Long id){
 
-        //Atributos
-        Categoria categoriaBD;
-
         //Buscamos la categoria en la base de datos
-        categoriaBD = this.categoriaServicio.findById(id);
+        Categoria categoriaBD = this.categoriaServicio.findById(id);
 
         //Limpiamos los mensajes
         this.mensajes.limpiar();
@@ -177,11 +144,10 @@ public class CategoriaControlador {
 
         //actualizamos la categoria
         categoriaBD.setEstado(true);
-        categoriaBD = this.categoriaServicio.save(categoriaBD);
 
         //Mensajes de exito
         this.mensajes.agregar("exito", "Se deshabilito con extio la categoria.");
-        this.mensajes.agregar("categoria", categoriaBD);
+        this.mensajes.agregar("categoria", this.categoriaServicio.save(categoriaBD));
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 }

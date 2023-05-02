@@ -1,8 +1,6 @@
 package cl.sterbe.apps.controladores;
 
 import cl.sterbe.apps.advice.exepcionesPersonalizadas.ErrorListaVacia;
-import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaHabilitado;
-import cl.sterbe.apps.advice.exepcionesPersonalizadas.NoEstaVerificado;
 import cl.sterbe.apps.componentes.Hora;
 import cl.sterbe.apps.componentes.Mensaje;
 import cl.sterbe.apps.componentes.UsuarioAutenticado;
@@ -43,11 +41,7 @@ public class ProductoControlador {
 
     @GetMapping("/productos")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, Object>> productos() throws NoEstaVerificado, NoEstaHabilitado, ErrorListaVacia {
-
-        //Validar estado del usuario y verificaicon
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
+    public ResponseEntity<Map<String, Object>> productos() throws ErrorListaVacia {
 
         //Mensajes de exito
         this.mensajes.limpiar();
@@ -58,12 +52,7 @@ public class ProductoControlador {
 
     @GetMapping("/productos/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, Object>> producto(@PathVariable Long id)
-            throws NoEstaVerificado, NoEstaHabilitado {
-
-        //Validar estado del usuario y verificaion
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
+    public ResponseEntity<Map<String, Object>> producto(@PathVariable Long id){
 
         //Mensajes de exito
         this.mensajes.limpiar();
@@ -74,12 +63,7 @@ public class ProductoControlador {
 
     @GetMapping("/productos/codigo-interno/{codigoInterno}")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR') OR hasRole('ROLE_TRABAJADOR')")
-    public ResponseEntity<Map<String, Object>> buscarPorCodigointerno(@PathVariable String codigoInterno)
-            throws NoEstaVerificado, NoEstaHabilitado {
-
-        //Validar estado y verificion
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
+    public ResponseEntity<Map<String, Object>> buscarPorCodigointerno(@PathVariable String codigoInterno) {
 
         //Mensajes
         this.mensajes.limpiar();
@@ -90,12 +74,7 @@ public class ProductoControlador {
 
     @GetMapping("/productos/codigo-barra/{codigoBarra}")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR') OR hasRole('ROLE_TRABAJADOR')")
-    public ResponseEntity<Map<String, Object>> buscarPorCodigoBarra(@PathVariable String codigoBarra)
-            throws NoEstaVerificado, NoEstaHabilitado {
-
-        //Validar estado y verificion
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
+    public ResponseEntity<Map<String, Object>> buscarPorCodigoBarra(@PathVariable String codigoBarra){
 
         //Mensajes
         this.mensajes.limpiar();
@@ -107,11 +86,7 @@ public class ProductoControlador {
     @PostMapping("/productos")
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR') OR hasRole('ROLE_TRABAJADOR')")
     public ResponseEntity<Map<String, Object>> guardar(@Valid @RequestBody Producto producto , BindingResult bindingResult)
-            throws NoEstaVerificado, NoEstaHabilitado, BindException {
-
-        //Validar estado y verificacion
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
+            throws BindException {
 
         if(bindingResult.hasErrors()){
             throw  new BindException(bindingResult);
@@ -131,21 +106,14 @@ public class ProductoControlador {
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR') OR hasRole('ROLE_TRABAJADOR')")
     public ResponseEntity<Map<String, Object>> editar(@Valid @RequestBody Producto producto , BindingResult bindingResult,
                                     @PathVariable Long id)
-            throws NoEstaVerificado, NoEstaHabilitado, BindException {
-
-        //Validar estado y verificacion
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
+            throws BindException {
 
         //Atributos
-        Producto productoBD;
+        Producto productoBD = this.productoServicio.findById(id);
 
         if(bindingResult.hasErrors()){
             throw  new BindException(bindingResult);
         }
-
-        //Buscar producto en la base de datos
-        productoBD = this.productoServicio.findById(id);
 
         //Actualizamos el producto
         productoBD.setNombre(producto.getNombre());
@@ -168,13 +136,9 @@ public class ProductoControlador {
     public ResponseEntity<Map<String, Object>> editarProductoCategoria(@PathVariable(value = "id-producto") Long idProducto,
                                                      @PathVariable(value = "id-categoria") Long idCategoria){
 
-        //Atributos
-        Producto productoBD;
-        Categoria categoriaBD;
-
         //Buscamos el producto y categoria en la base de datos
-        productoBD = this.productoServicio.findById(idProducto);
-        categoriaBD = this.categoriaServicio.findById(idCategoria);
+        Producto productoBD = this.productoServicio.findById(idProducto);
+        Categoria categoriaBD = this.categoriaServicio.findById(idCategoria);
 
         //Cambiamos la categoria
         productoBD.setCategoria(categoriaBD);
@@ -190,10 +154,7 @@ public class ProductoControlador {
     public ResponseEntity<Map<String, Object>> eliminar(@PathVariable Long id){
 
         //Atributos
-        Producto productoBD;
-
-        //Buscamos el producto en la base de datos
-        productoBD = this.productoServicio.findById(id);
+        Producto productoBD = this.productoServicio.findById(id);
 
         //eliminamos el producto
         this.productoServicio.delete(productoBD.getId());

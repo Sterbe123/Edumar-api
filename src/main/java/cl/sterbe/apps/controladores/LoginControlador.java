@@ -88,17 +88,20 @@ public class LoginControlador {
         //Enviamos correo de verificacion
         String token = TokenUtils.crearTokenValidacionUsuario(usuario.getId(), usuario.getEmail(),
                 Arrays.asList(new SimpleGrantedAuthority(usuario.getRol().getRol())));
-        try {
+
+        //****** se comenta ya que supere el limite mensual en mailtrap xD
+   /*     try {
             this.correos.enviarCorreoVerificacion(usuario.getEmail(), token);
         }catch (SendFailedException e){
             this.usuarioServicio.delete(usuario.getId());
             this.mensajes.agregar("excepciones", e.getMessage() + " " + e.getLocalizedMessage());
             this.mensajes.agregar("error", "Correo no válido.");
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(this.mensajes.mostrarMensajes());
-        }
+        }   */
 
         //Realizamos el mensaje correspondientes
         this.mensajes.agregar("mensaje", "Se ha creado con exito el usuario.");
+        this.mensajes.agregar("token", token);
         this.mensajes.agregar("usuario", usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }

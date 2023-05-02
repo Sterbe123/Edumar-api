@@ -50,7 +50,7 @@ public class UserDetailsImple implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return USUARIO.isEstado();
+        return true;
     }
 
     public Long getId(){
@@ -59,5 +59,9 @@ public class UserDetailsImple implements UserDetails {
 
     public boolean isVerify(){
         return USUARIO.isVerificacion();
+    }
+
+    public boolean isEstado(){
+        return USUARIO.isEstado();
     }
 }

@@ -55,17 +55,10 @@ public class PerfilControlador {
 
     @GetMapping("perfiles/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, Object>> buscarPerfil(@PathVariable Long id) throws NoEstaVerificado, NoEstaHabilitado {
-
-        //Validar si estas habilitado y verificado
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
-
-        //Atributos
-        Perfil perfil;
+    public ResponseEntity<Map<String, Object>> buscarPerfil(@PathVariable Long id){
 
         //Buscamos el perfil en la base de datos
-        perfil = this.perfilServicio.findById(id);
+        Perfil perfil = this.perfilServicio.findById(id);
 
         //Limpiamos los mensajes
         this.mensajes.limpiar();
@@ -87,11 +80,7 @@ public class PerfilControlador {
     @PostMapping("perfiles")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> guardarPerfil(@Valid @RequestBody Perfil perfil, BindingResult bindingResult)
-            throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorRun, ErrorEditarRecurso {
-
-        //Validar si estas habilitado y verificado
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
+            throws BindException, ErrorRun, ErrorEditarRecurso {
 
         //Validamos los campos vacios o nulos
         if(bindingResult.hasErrors()){
@@ -123,14 +112,10 @@ public class PerfilControlador {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> editarPerfil(@Valid @RequestBody Perfil perfil, BindingResult bindingResult,
                                           @PathVariable Long id)
-            throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorRun, ErrorEditarRecurso {
+            throws BindException, ErrorRun, ErrorEditarRecurso {
 
-        //Validar si estas habilitado yverificado
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
-
-        //Atributos
-        Perfil perfilBD;
+        //Buscamos el perfil en la base de datos
+        Perfil perfilBD = this.perfilServicio.findById(id);
 
         //Validamos los campos vacios o nulos
         if(bindingResult.hasErrors()){
@@ -139,9 +124,6 @@ public class PerfilControlador {
 
         //Validamos si el run existe
         this.validarRun.validarRun(perfil.getRun());
-
-        //Buscamos el perfil en la base de datos
-        perfilBD = this.perfilServicio.findById(id);
 
         //Validamos si el perfil corresponde con el usuario autenticado
         this.usuarioAutenticado.autenticarEditarRecurso(perfilBD.getUsuario().getId());
@@ -165,26 +147,19 @@ public class PerfilControlador {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.mensajes.mostrarMensajes());
     }
 
-    @PostMapping("perfiles/direcciones/{perfil_id}")
+    @PostMapping("perfiles/direcciones/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> agregarDireccion(@Valid @RequestBody Direccion direccion, BindingResult bindingResult,
-                                                @PathVariable(value = "perfil_id") Long id)
-            throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorEditarRecurso {
+                                                @PathVariable Long id)
+            throws BindException, ErrorEditarRecurso {
 
-        //Validar si estas habilitado y verificacion
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
-
-        //Atributos
-        Perfil perfilBD;
+        //Buscamos el perfil en la base de datos
+        Perfil perfilBD = this.perfilServicio.findById(id);
 
         //Validamos los campos vacios o nulos
         if(bindingResult.hasErrors()){
             throw new BindException(bindingResult);
         }
-
-        //Buscamos el perfil en la base de datos
-        perfilBD = this.perfilServicio.findById(id);
 
         //Validamos si el perfil corresponde con el usuario autenticado
         this.usuarioAutenticado.autenticarEditarRecurso(perfilBD.getUsuario().getId());
@@ -220,15 +195,13 @@ public class PerfilControlador {
     public ResponseEntity<Map<String, Object>> editarDireccion(@Valid @RequestBody Direccion direccion, BindingResult bindingResult,
                                              @PathVariable(value = "perfil_id") Long perfilId,
                                              @PathVariable(value = "direccion_id") Long direccionId)
-            throws NoEstaVerificado, NoEstaHabilitado, BindException, ErrorEditarRecurso {
-
-        //Validar si estas habilitado y verificacion
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
+            throws BindException, ErrorEditarRecurso {
 
         //Atributos
-        Perfil perfilBD;
         boolean direccionEncontrada = false;
+
+        //Buscamos el perfil en la base de datos
+        Perfil perfilBD = this.perfilServicio.findById(perfilId);
 
         //Limpiar mensajes
         this.mensajes.limpiar();
@@ -243,9 +216,6 @@ public class PerfilControlador {
         if(bindingResult.hasErrors()){
             throw new BindException(bindingResult);
         }
-
-        //Buscamos el perfil en la base de datos
-        perfilBD = this.perfilServicio.findById(perfilId);
 
         //Validamos si el perfil corresponde con el usuario autenticado
         this.usuarioAutenticado.autenticarEditarRecurso(perfilBD.getUsuario().getId());
@@ -286,15 +256,13 @@ public class PerfilControlador {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> eliminarDireccion(@PathVariable(value = "perfil_id") Long perfilId,
                                                @PathVariable(value = "direccion_id") Long direccionId)
-            throws NoEstaVerificado, NoEstaHabilitado, ErrorEditarRecurso {
-
-        //Validar si estas habilitado y verificacion
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
+            throws ErrorEditarRecurso {
 
         //Atributos
-        Perfil perfilBD;
         boolean direccionEncontrada = false;
+
+        //Buscamos el perfil en la base de datos
+        Perfil perfilBD = this.perfilServicio.findById(perfilId);
 
         //Limpiar mensajes
         this.mensajes.limpiar();
@@ -304,9 +272,6 @@ public class PerfilControlador {
             this.mensajes.agregar("Error", "El parametro no debe ser 0 ni inferior");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
-
-        //Buscamos el perfil en la base de datos
-        perfilBD = this.perfilServicio.findById(perfilId);
 
         //Validamos si el perfil corresponde con el usuario autenticado
         this.usuarioAutenticado.autenticarEditarRecurso(perfilBD.getUsuario().getId());
@@ -341,15 +306,13 @@ public class PerfilControlador {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> editarDireccionPrincipal(@PathVariable(value = "perfil_id") Long perfilId,
                                                       @PathVariable(value = "direccion_id") Long direccionId)
-            throws NoEstaVerificado, NoEstaHabilitado, ErrorEditarRecurso {
-
-        //Validar si estas habilitado y verificacion
-        this.usuarioAutenticado.autenticarUsuario();
-        this.usuarioAutenticado.verificarUsuario();
+            throws ErrorEditarRecurso {
 
         //Atributos
-        Perfil perfilBD;
         boolean direccionEncontrada = false;
+
+        //Buscamos el perfil en la base de datos
+        Perfil perfilBD = this.perfilServicio.findById(perfilId);
 
         //Limpiar mensajes
         this.mensajes.limpiar();
@@ -359,9 +322,6 @@ public class PerfilControlador {
             this.mensajes.agregar("error", "El parametro no debe ser inferior o igual a 0");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.mensajes.mostrarMensajes());
         }
-
-        //Buscamos el perfil en la base de datos
-        perfilBD = this.perfilServicio.findById(perfilId);
 
         //Validamos si el perfil corresponde con el usuario autenticado
         this.usuarioAutenticado.autenticarEditarRecurso(perfilBD.getUsuario().getId());

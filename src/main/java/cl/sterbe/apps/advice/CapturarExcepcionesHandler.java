@@ -159,4 +159,11 @@ public class CapturarExcepcionesHandler {
         this.mensajes.agregar("error", "No se encontraron " + e.getNombre());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
     }
+
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<Map<String, Object>> nullPointException(NullPointerException e){
+        this.mensajes.limpiar();
+        this.mensajes.agregar("error", "null");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(this.mensajes.mostrarMensajes());
+    }
 }
