@@ -23,9 +23,7 @@ public class PerfilImplementacion implements PerfilServicio {
     @Override
     @Transactional(readOnly = true)
     public List<Perfil> findAll() throws ErrorListaVacia {
-        List<Perfil>  perfiles = (List<Perfil>) this.perfilDAO.findAll();
-        perfiles.forEach(u -> u.getUsuario().setContrasena(""));
-        return Optional.of(perfiles)
+        return Optional.of((List<Perfil>) this.perfilDAO.findAll())
                 .filter(p -> !p.isEmpty())
                 .orElseThrow(() -> new ErrorListaVacia("perfiles"));
     }
@@ -33,9 +31,7 @@ public class PerfilImplementacion implements PerfilServicio {
     @Override
     @Transactional(readOnly = true)
     public Perfil findById(Long id) {
-        Perfil perfil = this.perfilDAO.findById(id).orElseThrow(() -> new NoSeEncontroPojo("perfil"));
-        perfil.getUsuario().setContrasena("");
-        return perfil;
+        return this.perfilDAO.findById(id).orElseThrow(() -> new NoSeEncontroPojo("perfil"));
     }
 
     @Override

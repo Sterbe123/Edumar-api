@@ -89,7 +89,6 @@ public class UsuarioControlador {
 
         //hacemos la persistencia
         usuario = this.usuarioServicio.save(this.usuarioAutenticado.getUsuarioAutenticado());
-        usuario.setContrasena("");
 
         //mensaje de exito
         this.mensajes.agregar("exito", "Se actualizo la contraseña correctamente");
@@ -123,7 +122,6 @@ public class UsuarioControlador {
 
         //Hacemos la actualizacion
         usuarioBD = this.usuarioServicio.save(usuarioBD);
-        usuarioBD.setContrasena("");
 
         //mensajes de exito
         this.mensajes.agregar("exito", "El usuario se deshabilito correctamente");
@@ -157,7 +155,6 @@ public class UsuarioControlador {
 
         //Hacemos la actualizacion
         usuarioBD = this.usuarioServicio.save(usuarioBD);
-        usuarioBD.setContrasena("");
 
         //mensajes de exito
         this.mensajes.agregar("exito", "El usuario se habilito correctamente");

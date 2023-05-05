@@ -99,7 +99,6 @@ public class PerfilControlador {
 
         //Agregamos el perfil a la base de datos
         perfil = this.perfilServicio.save(perfil);
-        perfil.getUsuario().setContrasena("");
 
         //Mandamos el mensaje de exito
         this.mensajes.limpiar();
@@ -138,7 +137,6 @@ public class PerfilControlador {
 
         //Como igual se puede actualizar el run de debe validar si exite o no
         perfilBD = this.perfilServicio.save(perfilBD);
-        perfilBD.getUsuario().setContrasena("");
 
         //Actualizamos base de datos
         this.mensajes.limpiar();
@@ -181,7 +179,6 @@ public class PerfilControlador {
         direccion = this.direccionServicio.save(direccion);
         perfilBD.getDirecciones().add(direccion);
         perfilBD = this.perfilServicio.save(perfilBD);
-        perfilBD.getUsuario().setContrasena("");
 
         //Mandamos el mensaje de exito
         this.mensajes.limpiar();
@@ -244,7 +241,6 @@ public class PerfilControlador {
 
         //Persistencia en el perfil
         perfilBD = this.perfilServicio.save(perfilBD);
-        perfilBD.getUsuario().setContrasena("");
 
         //Creamos el mensaje de exito
         this.mensajes.agregar("Exito", "Se actualizo la dirección con exito");
@@ -294,7 +290,6 @@ public class PerfilControlador {
         //Persistencia en el perfil
         perfilBD = this.perfilServicio.save(perfilBD);
         this.direccionServicio.delete(direccionId);
-        perfilBD.getUsuario().setContrasena("");
 
         //Creamos el mensaje de exito
         this.mensajes.agregar("Exito", "Se elimino la dirección con exito");
@@ -344,7 +339,6 @@ public class PerfilControlador {
 
         //Persistencia en el perfil
         perfilBD = this.perfilServicio.save(perfilBD);
-        perfilBD.getUsuario().setContrasena("");
 
         //Mensajes de exito
         this.mensajes.agregar("exito", "Se actualizo la dirección con exito.");

@@ -21,9 +21,7 @@ public class UsuarioImplementacion implements UsuarioServicio {
     @Override
     @Transactional(readOnly = true)
     public List<Usuario> findAll() throws ErrorListaVacia {
-        List<Usuario> usuarios = (List<Usuario>) this.usuarioDAO.findAll();
-        usuarios.forEach(u -> u.setContrasena(""));
-        return Optional.of(usuarios)
+        return Optional.of((List<Usuario>) this.usuarioDAO.findAll())
                 .filter(u -> !u.isEmpty())
                 .orElseThrow(() -> new ErrorListaVacia("usuarios"));
     }
@@ -31,9 +29,7 @@ public class UsuarioImplementacion implements UsuarioServicio {
     @Override
     @Transactional(readOnly = true)
     public Usuario findById(Long id) {
-        Usuario usuario = this.usuarioDAO.findById(id).orElseThrow(() -> new NoSeEncontroPojo("usuario"));
-        usuario.setContrasena("");
-        return usuario;
+        return this.usuarioDAO.findById(id).orElseThrow(() -> new NoSeEncontroPojo("usuario"));
     }
 
     @Override
