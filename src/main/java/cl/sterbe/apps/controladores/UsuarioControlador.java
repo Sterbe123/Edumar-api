@@ -18,6 +18,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -43,10 +44,13 @@ public class UsuarioControlador {
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
     public ResponseEntity<Map<String, Object>> buscarUsuarios() throws ErrorListaVacia {
 
+        List<Usuario> usuarios = this.usuarioServicio.findAll();
+        usuarios.forEach(usuario -> usuario.setContrasena(""));
+
         //Mandar los mensajes de exito
         this.mensajes.limpiar();
         this.mensajes.agregar("exito", "Se encontraron los usuarios con exito");
-        this.mensajes.agregar("usuarios", this.usuarioServicio.findAll());
+        this.mensajes.agregar("usuarios", usuarios);
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
@@ -54,10 +58,13 @@ public class UsuarioControlador {
     @PreAuthorize("hasRole('ROLE_ADMINISTRADOR')")
     public ResponseEntity<Map<String, Object>> buscarUsuario(@PathVariable Long id){
 
+        Usuario usuario = this.usuarioServicio.findById(id);
+        usuario.setContrasena("");
+
         //Mandar mensajes de exito
         this.mensajes.limpiar();
         this.mensajes.agregar("exito", "Se encontro el usuario con exito");
-        this.mensajes.agregar("usuario", this.usuarioServicio.findById(id));
+        this.mensajes.agregar("usuario", usuario);
         return ResponseEntity.status(HttpStatus.OK).body(this.mensajes.mostrarMensajes());
     }
 
@@ -89,6 +96,7 @@ public class UsuarioControlador {
 
         //hacemos la persistencia
         usuario = this.usuarioServicio.save(this.usuarioAutenticado.getUsuarioAutenticado());
+        usuario.setContrasena("");
 
         //mensaje de exito
         this.mensajes.agregar("exito", "Se actualizo la contraseña correctamente");
@@ -122,6 +130,7 @@ public class UsuarioControlador {
 
         //Hacemos la actualizacion
         usuarioBD = this.usuarioServicio.save(usuarioBD);
+        usuarioBD.setContrasena("");
 
         //mensajes de exito
         this.mensajes.agregar("exito", "El usuario se deshabilito correctamente");
@@ -155,6 +164,7 @@ public class UsuarioControlador {
 
         //Hacemos la actualizacion
         usuarioBD = this.usuarioServicio.save(usuarioBD);
+        usuarioBD.setContrasena("");
 
         //mensajes de exito
         this.mensajes.agregar("exito", "El usuario se habilito correctamente");

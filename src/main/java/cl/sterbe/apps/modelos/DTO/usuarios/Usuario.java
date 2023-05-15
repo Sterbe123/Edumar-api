@@ -1,7 +1,5 @@
 package cl.sterbe.apps.modelos.DTO.usuarios;
 
-import cl.sterbe.apps.modelos.DTO.usuarios.Rol;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -29,7 +27,6 @@ public class Usuario {
 
     @NotNull
     @NotEmpty
-    @JsonIgnore
     private String contrasena;
 
     private boolean estado;

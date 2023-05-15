@@ -80,6 +80,7 @@ public class VerificacionCuentaControlador {
 
         //persistencia
         usuario = this.usuarioServicio.save(usuario);
+        usuario.setContrasena("");
 
         //Mensajes de exito
         this.mensajes.agregar("exito", "Se verifico el usuario correctamente.");

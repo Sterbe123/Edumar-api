@@ -80,6 +80,7 @@ public class LoginControlador {
 
         //Realizamos la insercion a la base de datos
         usuario = this.usuarioServicio.save(usuario);
+        usuario.setContrasena("");
 
         //Limpiar mensajes
         this.mensajes.limpiar();
